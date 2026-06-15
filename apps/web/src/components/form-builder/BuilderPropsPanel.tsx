@@ -1,0 +1,353 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { nanoid } from "nanoid";
+import { MousePointerClick, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
+import type { ConditionAction, ConditionOperator, FieldOption, FormField } from "@kaemform/shared";
+import { Badge, Input, Textarea, Switch, Button } from "@/components/ui";
+import { useFormBuilderStore } from "@/stores/formBuilderStore";
+
+const CHOICE_TYPES: FormField["type"][] = ["single_choice", "multiple_choice", "dropdown"];
+const NON_REFERENCEABLE_TYPES: FormField["type"][] = ["section", "paragraph", "signature"];
+const CONDITION_OPERATORS: ConditionOperator[] = ["equals", "not_equals", "contains", "is_empty", "is_not_empty"];
+
+function toNumberOrUndefined(value: string): number | undefined {
+  return value === "" ? undefined : Number(value);
+}
+
+function OptionsEditor({ field, onChange }: { field: FormField; onChange: (options: FieldOption[]) => void }) {
+  const t = useTranslations("builder.props");
+  const options = field.options ?? [];
+
+  const updateOption = (id: string, label: string) => {
+    onChange(options.map((o) => (o.id === id ? { ...o, label, value: label } : o)));
+  };
+
+  const removeOption = (id: string) => {
+    onChange(options.filter((o) => o.id !== id));
+  };
+
+  const addOption = () => {
+    const label = t("optionLabel", { n: options.length + 1 });
+    onChange([...options, { id: nanoid(6), label, value: label }]);
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="text-sm font-medium text-gray-700">{t("options")}</label>
+      {options.map((option) => (
+        <div key={option.id} className="flex items-center gap-2">
+          <Input value={option.label} onChange={(e) => updateOption(option.id, e.target.value)} className="flex-1" />
+          <button
+            type="button"
+            onClick={() => removeOption(option.id)}
+            disabled={options.length <= 2}
+            className="rounded p-2 text-gray-400 hover:bg-red-50 hover:text-error disabled:cursor-not-allowed disabled:opacity-30"
+            aria-label="Remove option"
+          >
+            <Trash2 className="h-4 w-4" />
+          </button>
+        </div>
+      ))}
+      <Button type="button" variant="secondary" size="sm" onClick={addOption}>
+        <Plus className="h-4 w-4" />
+        {t("addOption")}
+      </Button>
+    </div>
+  );
+}
+
+function ConditionsEditor({
+  field,
+  fields,
+  onChange,
+  canUse,
+  onLockedClick,
+}: {
+  field: FormField;
+  fields: FormField[];
+  onChange: (conditions: FormField["conditions"]) => void;
+  canUse: boolean;
+  onLockedClick: () => void;
+}) {
+  const t = useTranslations("builder.props.conditions");
+  const tCommon = useTranslations("common");
+  const condition = field.conditions?.[0];
+
+  const referenceable = fields.filter(
+    (f) => f.order < field.order && !NON_REFERENCEABLE_TYPES.includes(f.type)
+  );
+
+  const toggle = (enabled: boolean) => {
+    if (!enabled) {
+      onChange([]);
+      return;
+    }
+    const first = referenceable[0];
+    onChange(first ? [{ field_id: first.id, operator: "equals", value: "", action: "show" }] : []);
+  };
+
+  const update = (partial: Partial<NonNullable<FormField["conditions"]>[number]>) => {
+    if (!condition) return;
+    onChange([{ ...condition, ...partial }]);
+  };
+
+  return (
+    <div className="border-t border-slate-100 pt-5">
+      <div className="mb-2 flex items-center gap-2">
+        <h3 className="text-sm font-semibold text-gray-900">{t("title")}</h3>
+        {!canUse && (
+          <button type="button" onClick={onLockedClick} className="rounded-full outline-none">
+            <Badge variant="pro">{tCommon("pro")}</Badge>
+          </button>
+        )}
+      </div>
+      <div className="relative">
+        <Switch
+          label={t("toggle")}
+          checked={!!condition}
+          onCheckedChange={toggle}
+          disabled={!canUse || referenceable.length === 0}
+        />
+        {!canUse && (
+          <button
+            type="button"
+            onClick={onLockedClick}
+            className="absolute inset-0 cursor-pointer"
+            aria-label={tCommon("pro")}
+          />
+        )}
+      </div>
+
+      {condition && (
+        <div className="mt-3 flex flex-col gap-3">
+          <div>
+            <label className="text-xs text-gray-500">{t("ifField")}</label>
+            <select
+              value={condition.field_id}
+              onChange={(e) => update({ field_id: e.target.value })}
+              className="mt-1 h-9 w-full rounded-input border border-border bg-white px-2 text-sm text-gray-900"
+            >
+              {referenceable.map((f) => (
+                <option key={f.id} value={f.id}>
+                  {f.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="text-xs text-gray-500">{t("operator")}</label>
+            <select
+              value={condition.operator}
+              onChange={(e) => update({ operator: e.target.value as ConditionOperator })}
+              className="mt-1 h-9 w-full rounded-input border border-border bg-white px-2 text-sm text-gray-900"
+            >
+              {CONDITION_OPERATORS.map((op) => (
+                <option key={op} value={op}>
+                  {t(`operators.${op}`)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {condition.operator !== "is_empty" && condition.operator !== "is_not_empty" && (
+            <Input label={t("value")} value={condition.value ?? ""} onChange={(e) => update({ value: e.target.value })} />
+          )}
+
+          <div>
+            <label className="text-xs text-gray-500">{t("action")}</label>
+            <select
+              value={condition.action}
+              onChange={(e) => update({ action: e.target.value as ConditionAction })}
+              className="mt-1 h-9 w-full rounded-input border border-border bg-white px-2 text-sm text-gray-900"
+            >
+              <option value="show">{t("show")}</option>
+              <option value="hide">{t("hide")}</option>
+            </select>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function BuilderPropsPanelContent({
+  canUseConditionalLogic,
+  onLockedClick,
+}: {
+  canUseConditionalLogic: boolean;
+  onLockedClick: () => void;
+}) {
+  const t = useTranslations();
+  const fields = useFormBuilderStore((s) => s.fields);
+  const selectedFieldId = useFormBuilderStore((s) => s.selectedFieldId);
+  const updateField = useFormBuilderStore((s) => s.updateField);
+
+  const field = fields.find((f) => f.id === selectedFieldId);
+
+  return (
+    <>
+      {!field ? (
+        <div className="flex min-h-[320px] flex-col items-center justify-center px-6 text-center">
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-400 ring-8 ring-slate-50">
+            <MousePointerClick className="h-6 w-6" />
+          </div>
+          <p className="mt-5 text-sm font-semibold text-slate-700">{t("builder.noFieldSelected")}</p>
+          <p className="mt-1 text-xs leading-5 text-slate-400">Pengaturan field akan muncul di panel ini.</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-5 p-5">
+          <div className="flex items-center gap-2 text-primary-600">
+            <SlidersHorizontal className="h-4 w-4" />
+            <h2 className="text-xs font-bold uppercase tracking-[0.12em]">{t("builder.props.title")}</h2>
+          </div>
+
+          <Input
+            label={t("builder.props.label")}
+            value={field.label}
+            onChange={(e) => updateField(field.id, { label: e.target.value })}
+          />
+
+          {field.type === "paragraph" ? (
+            <Textarea
+              label={t("builder.props.content")}
+              value={field.content ?? ""}
+              onChange={(e) => updateField(field.id, { content: e.target.value })}
+              rows={5}
+            />
+          ) : (
+            <Textarea
+              label={t("builder.props.description")}
+              value={field.description ?? ""}
+              onChange={(e) => updateField(field.id, { description: e.target.value })}
+            />
+          )}
+
+          {field.type !== "section" && field.type !== "paragraph" && (
+            <Switch
+              label={t("builder.props.required")}
+              checked={field.required}
+              onCheckedChange={(checked) => updateField(field.id, { required: checked })}
+            />
+          )}
+
+          {(field.type === "short_text" || field.type === "long_text" || field.type === "number" || field.type === "email" || field.type === "phone") && (
+            <Input
+              label={t("builder.props.placeholder")}
+              value={field.placeholder ?? ""}
+              onChange={(e) => updateField(field.id, { placeholder: e.target.value })}
+            />
+          )}
+
+          {(field.type === "short_text" || field.type === "long_text") && (
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                type="number"
+                label={t("builder.props.minLength")}
+                value={field.validation?.min_length ?? ""}
+                onChange={(e) =>
+                  updateField(field.id, {
+                    validation: { ...field.validation, min_length: toNumberOrUndefined(e.target.value) },
+                  })
+                }
+              />
+              <Input
+                type="number"
+                label={t("builder.props.maxLength")}
+                value={field.validation?.max_length ?? ""}
+                onChange={(e) =>
+                  updateField(field.id, {
+                    validation: { ...field.validation, max_length: toNumberOrUndefined(e.target.value) },
+                  })
+                }
+              />
+            </div>
+          )}
+
+          {field.type === "number" && (
+            <div className="grid grid-cols-2 gap-2">
+              <Input
+                type="number"
+                label={t("builder.props.minValue")}
+                value={field.validation?.min_value ?? ""}
+                onChange={(e) =>
+                  updateField(field.id, {
+                    validation: { ...field.validation, min_value: toNumberOrUndefined(e.target.value) },
+                  })
+                }
+              />
+              <Input
+                type="number"
+                label={t("builder.props.maxValue")}
+                value={field.validation?.max_value ?? ""}
+                onChange={(e) =>
+                  updateField(field.id, {
+                    validation: { ...field.validation, max_value: toNumberOrUndefined(e.target.value) },
+                  })
+                }
+              />
+            </div>
+          )}
+
+          {CHOICE_TYPES.includes(field.type) && (
+            <OptionsEditor field={field} onChange={(options) => updateField(field.id, { options })} />
+          )}
+
+          {field.type === "scale" && (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  type="number"
+                  label={t("builder.props.scaleMin")}
+                  value={field.scaleMin ?? 1}
+                  onChange={(e) => updateField(field.id, { scaleMin: Number(e.target.value) })}
+                />
+                <Input
+                  type="number"
+                  label={t("builder.props.scaleMax")}
+                  value={field.scaleMax ?? 5}
+                  onChange={(e) => updateField(field.id, { scaleMax: Number(e.target.value) })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Input
+                  label={t("builder.props.scaleMinLabel")}
+                  value={field.scaleMinLabel ?? ""}
+                  onChange={(e) => updateField(field.id, { scaleMinLabel: e.target.value })}
+                />
+                <Input
+                  label={t("builder.props.scaleMaxLabel")}
+                  value={field.scaleMaxLabel ?? ""}
+                  onChange={(e) => updateField(field.id, { scaleMaxLabel: e.target.value })}
+                />
+              </div>
+            </>
+          )}
+
+          <ConditionsEditor
+            field={field}
+            fields={fields}
+            onChange={(conditions) => updateField(field.id, { conditions })}
+            canUse={canUseConditionalLogic}
+            onLockedClick={onLockedClick}
+          />
+        </div>
+      )}
+    </>
+  );
+}
+
+export function BuilderPropsPanel({
+  canUseConditionalLogic,
+  onLockedClick,
+}: {
+  canUseConditionalLogic: boolean;
+  onLockedClick: () => void;
+}) {
+  return (
+    <aside className="hidden w-[280px] shrink-0 overflow-y-auto border-l border-border bg-white xl:block">
+      <BuilderPropsPanelContent canUseConditionalLogic={canUseConditionalLogic} onLockedClick={onLockedClick} />
+    </aside>
+  );
+}

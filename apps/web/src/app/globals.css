@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-inter: "Inter", system-ui, sans-serif;
+    --bg-page: #f8fafc;
+    --bg-card: #ffffff;
+    --bg-input: #f8fafc;
+    --text-primary: #0f172a;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-background-subtle text-slate-700;
+    min-width: 320px;
+  }
+
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-200 ring-offset-2 ring-offset-white;
+  }
+
+  ::selection {
+    @apply bg-primary-100 text-primary-900;
+  }
+
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  .page-container {
+    @apply mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8;
+  }
+
+  .page-heading {
+    @apply text-2xl font-bold tracking-tight text-slate-900;
+  }
+
+  .page-subtitle {
+    @apply mt-1 text-sm leading-6 text-slate-500;
+  }
+
+  .surface-transition {
+    @apply transition-all duration-150 ease-out;
+  }
+
+  .brand-accent {
+    background: linear-gradient(90deg, #4da3ff, #1a6fcc);
+  }
+
+  .brand-wash {
+    background:
+      radial-gradient(circle at 15% 15%, rgba(77, 163, 255, 0.16), transparent 34%),
+      radial-gradient(circle at 85% 0%, rgba(26, 111, 204, 0.10), transparent 30%),
+      #f8fafc;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

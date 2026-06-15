@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KaemForm — Design Reference</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --kaem-50: #EBF5FF; --kaem-100: #D6EBFF; --kaem-200: #ADD6FF;
+    --kaem-300: #7ABFFF; --kaem-400: #4DA3FF; --kaem-500: #2E86DE;
+    --kaem-600: #1A6FCC; --kaem-700: #1456A8; --kaem-800: #0D3F7F;
+    --kaem-900: #0A2D5C;
+    --gray-50: #F8FAFC; --gray-100: #F1F5F9; --gray-200: #E2E8F0;
+    --gray-300: #CBD5E1; --gray-400: #94A3B8; --gray-500: #64748B;
+    --gray-600: #475569; --gray-700: #334155; --gray-900: #0F172A;
+    --success: #10B981; --warning: #F59E0B; --error: #EF4444;
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-hover: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-form: 0 8px 30px rgba(0,0,0,0.08);
+    --radius: 12px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Inter',system-ui,sans-serif; color:var(--gray-700); background:var(--gray-50); line-height:1.5; }
+
+  /* === REFERENCE NAV === */
+  .ref-nav { position:sticky; top:0; z-index:100; background:#fff; border-bottom:1px solid var(--gray-200); }
+  .ref-nav-inner { max-width:1200px; margin:0 auto; display:flex; gap:4px; padding:8px 24px; overflow-x:auto; }
+  .ref-tab { padding:8px 16px; font-size:13px; font-weight:500; color:var(--gray-500); background:none; border:none; border-radius:8px; cursor:pointer; white-space:nowrap; transition:all .15s; }
+  .ref-tab:hover { color:var(--kaem-600); background:var(--kaem-50); }
+  .ref-tab.active { color:var(--kaem-600); background:var(--kaem-100); }
+
+  .section { display:none; max-width:1200px; margin:0 auto; padding:32px 24px 64px; }
+  .section.active { display:block; }
+  .section h2 { font-size:24px; font-weight:700; color:var(--gray-900); margin-bottom:8px; }
+  .section .subtitle { font-size:14px; color:var(--gray-500); margin-bottom:32px; }
+  .section h3 { font-size:16px; font-weight:600; color:var(--gray-900); margin:32px 0 16px; }
+
+  /* === TOKENS === */
+  .color-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:12px; }
+  .color-swatch { border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-card); }
+  .color-swatch .swatch { height:64px; }
+  .color-swatch .info { padding:8px 10px; background:#fff; font-size:11px; }
+  .color-swatch .info .name { font-weight:600; color:var(--gray-900); }
+  .color-swatch .info .hex { color:var(--gray-400); }
+
+  .type-row { display:flex; align-items:baseline; gap:16px; padding:12px 0; border-bottom:1px solid var(--gray-100); }
+  .type-label { width:80px; font-size:11px; font-weight:600; color:var(--gray-400); text-transform:uppercase; letter-spacing:.5px; flex-shrink:0; }
+  .type-sample { color:var(--gray-900); }
+
+  /* === MOCKUP FRAMES === */
+  .mockup-frame { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-form); overflow:hidden; margin-bottom:32px; border:1px solid var(--gray-200); }
+  .mockup-label { font-size:11px; font-weight:600; color:var(--gray-400); text-transform:uppercase; letter-spacing:1px; margin-bottom:12px; }
+
+  /* === NAVBAR MOCKUP === */
+  .nav-gradient { height:3px; background:linear-gradient(90deg, var(--kaem-400), var(--kaem-600)); }
+  .nav-bar { display:flex; align-items:center; justify-content:space-between; padding:0 24px; height:56px; border-bottom:1px solid var(--gray-200); }
+  .nav-left { display:flex; align-items:center; gap:10px; }
+  .nav-logo { width:28px; height:28px; background:linear-gradient(135deg, var(--kaem-400), var(--kaem-600)); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:14px; }
+  .nav-brand { font-size:16px; font-weight:600; color:var(--kaem-700); }
+  .nav-right { display:flex; align-items:center; gap:16px; }
+  .nav-badge { background:var(--kaem-500); color:#fff; font-size:11px; font-weight:600; padding:3px 10px; border-radius:20px; }
+  .nav-avatar { width:32px; height:32px; border-radius:50%; background:var(--kaem-100); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; color:var(--kaem-600); }
+  .nav-user { font-size:13px; color:var(--gray-600); display:flex; align-items:center; gap:8px; cursor:pointer; }
+
+  /* === DASHBOARD MOCKUP === */
+  .dash-content { padding:32px; background:var(--gray-50); }
+  .dash-greeting { font-size:20px; font-weight:600; color:var(--gray-900); margin-bottom:24px; }
+  .stats-bar { display:flex; gap:16px; padding:16px 20px; background:var(--kaem-50); border:1px solid var(--kaem-100); border-radius:var(--radius); margin-bottom:32px; }
+  .stat-item { flex:1; text-align:center; }
+  .stat-num { font-size:24px; font-weight:700; color:var(--kaem-700); }
+  .stat-label { font-size:12px; color:var(--gray-500); margin-top:2px; }
+  .dash-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+  .dash-title { font-size:16px; font-weight:600; color:var(--gray-900); }
+
+  .ws-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:16px; }
+  .ws-card { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-card); overflow:hidden; display:flex; transition:all .15s; cursor:pointer; }
+  .ws-card:hover { box-shadow:var(--shadow-hover); transform:translateY(-1px); }
+  .ws-accent { width:4px; flex-shrink:0; }
+  .ws-body { padding:20px; flex:1; }
+  .ws-name { font-size:16px; font-weight:600; color:var(--gray-900); margin-bottom:8px; }
+  .ws-meta { font-size:13px; color:var(--gray-500); display:flex; gap:16px; margin-bottom:12px; }
+  .ws-date { font-size:12px; color:var(--gray-400); }
+  .ws-link { font-size:13px; font-weight:500; color:var(--kaem-500); text-decoration:none; }
+
+  /* === FORM LIST === */
+  .form-list { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-card); overflow:hidden; }
+  .form-row { display:flex; align-items:center; padding:16px 20px; border-bottom:1px solid var(--gray-100); transition:background .1s; cursor:pointer; }
+  .form-row:last-child { border-bottom:none; }
+  .form-row:hover { background:var(--kaem-50); }
+  .form-info { flex:1; }
+  .form-name { font-size:14px; font-weight:600; color:var(--gray-900); margin-bottom:4px; }
+  .form-meta-row { display:flex; gap:16px; align-items:center; font-size:12px; color:var(--gray-500); }
+  .status-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:4px; }
+  .status-dot.published { background:var(--success); }
+  .status-dot.draft { background:var(--gray-300); }
+  .status-dot.closed { background:var(--error); }
+  .form-url { font-size:11px; color:var(--kaem-400); }
+  .form-actions { color:var(--gray-400); cursor:pointer; padding:8px; }
+
+  /* === BUILDER MOCKUP === */
+  .builder-wrap { display:grid; grid-template-columns:220px 1fr 280px; height:500px; }
+  .builder-palette { background:#fff; border-right:1px solid var(--gray-200); padding:16px; overflow-y:auto; }
+  .palette-group { font-size:11px; font-weight:600; color:var(--gray-400); text-transform:uppercase; letter-spacing:.5px; margin:16px 0 8px; }
+  .palette-group:first-child { margin-top:0; }
+  .palette-item { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; font-size:13px; color:var(--gray-700); cursor:grab; transition:background .1s; }
+  .palette-item:hover { background:var(--kaem-50); }
+  .palette-icon { width:18px; height:18px; display:flex; align-items:center; justify-content:center; color:var(--kaem-400); font-size:14px; }
+
+  .builder-canvas { background:var(--gray-50); padding:32px; overflow-y:auto; display:flex; flex-direction:column; align-items:center; }
+  .canvas-inner { width:100%; max-width:640px; display:flex; flex-direction:column; gap:12px; }
+  .field-card { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-card); padding:16px 20px; border-left:3px solid transparent; transition:all .15s; position:relative; }
+  .field-card:hover { box-shadow:var(--shadow-hover); }
+  .field-card.selected { border-left-color:var(--kaem-500); background:rgba(46,134,222,0.03); }
+  .field-label { font-size:14px; font-weight:500; color:var(--gray-900); margin-bottom:8px; }
+  .field-label .req { color:var(--error); }
+  .field-input { width:100%; height:40px; background:var(--gray-100); border:1px solid var(--gray-200); border-radius:10px; padding:0 12px; font-size:13px; color:var(--gray-400); display:flex; align-items:center; }
+  .field-select { appearance:none; width:100%; height:40px; background:var(--gray-100) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 12px center; border:1px solid var(--gray-200); border-radius:10px; padding:0 12px; font-size:13px; color:var(--gray-700); }
+  .field-sig { width:100%; height:80px; background:var(--gray-100); border:1px solid var(--gray-200); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--gray-400); border-bottom:2px solid var(--gray-300); }
+  .field-actions { position:absolute; top:12px; right:12px; display:flex; gap:4px; opacity:0; transition:opacity .15s; }
+  .field-card:hover .field-actions { opacity:1; }
+  .field-action-btn { width:28px; height:28px; border:none; background:var(--gray-100); border-radius:6px; cursor:pointer; font-size:12px; color:var(--gray-500); display:flex; align-items:center; justify-content:center; }
+  .field-action-btn:hover { background:var(--gray-200); }
+  .add-field-btn { width:100%; padding:12px; border:2px dashed var(--gray-200); border-radius:var(--radius); background:none; font-size:13px; font-weight:500; color:var(--gray-400); cursor:pointer; transition:all .15s; }
+  .add-field-btn:hover { border-color:var(--kaem-400); color:var(--kaem-500); background:var(--kaem-50); }
+
+  .builder-props { background:#fff; border-left:1px solid var(--gray-200); padding:20px; overflow-y:auto; }
+  .props-header { display:flex; align-items:center; gap:8px; font-size:12px; font-weight:600; color:var(--kaem-500); text-transform:uppercase; letter-spacing:.5px; margin-bottom:20px; }
+  .props-group { margin-bottom:20px; }
+  .props-label { font-size:12px; font-weight:500; color:var(--gray-600); margin-bottom:6px; }
+  .props-input { width:100%; height:36px; background:var(--gray-50); border:1px solid var(--gray-200); border-radius:8px; padding:0 10px; font-size:13px; color:var(--gray-900); font-family:inherit; outline:none; transition:border .15s; }
+  .props-input:focus { border-color:var(--kaem-500); box-shadow:0 0 0 3px var(--kaem-100); }
+  .props-toggle { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--gray-700); }
+  .toggle { width:36px; height:20px; background:var(--gray-300); border-radius:10px; position:relative; cursor:pointer; transition:background .15s; }
+  .toggle.on { background:var(--kaem-500); }
+  .toggle::after { content:''; width:16px; height:16px; background:#fff; border-radius:50%; position:absolute; top:2px; left:2px; transition:transform .15s; box-shadow:0 1px 2px rgba(0,0,0,.1); }
+  .toggle.on::after { transform:translateX(16px); }
+  .props-divider { height:1px; background:var(--gray-100); margin:20px 0; }
+  .props-empty { display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; text-align:center; color:var(--gray-400); font-size:13px; gap:12px; }
+  .props-empty-icon { width:48px; height:48px; background:var(--gray-100); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:20px; }
+
+  /* === PUBLIC FORM === */
+  .public-page { background:var(--gray-50); padding:40px 24px; min-height:500px; display:flex; justify-content:center; }
+  .public-card { background:#fff; width:100%; max-width:540px; border-radius:16px; box-shadow:var(--shadow-form); padding:36px 32px; }
+  .public-logo { display:flex; align-items:center; gap:8px; margin-bottom:20px; }
+  .public-logo .nav-logo { width:24px; height:24px; font-size:11px; border-radius:6px; }
+  .public-logo span { font-size:12px; font-weight:500; color:var(--gray-400); }
+  .public-title { font-size:22px; font-weight:700; color:var(--gray-900); margin-bottom:6px; }
+  .public-desc { font-size:14px; color:var(--gray-500); margin-bottom:20px; }
+  .public-divider { height:2px; background:linear-gradient(90deg, var(--kaem-200), transparent); margin-bottom:28px; border-radius:1px; }
+  .public-field { margin-bottom:20px; }
+  .public-field label { font-size:13px; font-weight:500; color:var(--gray-700); display:block; margin-bottom:6px; }
+  .public-field .req { color:var(--error); font-size:12px; }
+  .public-field input, .public-field select { width:100%; height:44px; background:var(--gray-50); border:1px solid var(--gray-200); border-radius:10px; padding:0 14px; font-size:14px; font-family:inherit; color:var(--gray-900); outline:none; transition:all .15s; }
+  .public-field input:focus, .public-field select:focus { border-color:var(--kaem-500); box-shadow:0 0 0 3px var(--kaem-100); background:#fff; }
+  .public-field input::placeholder { color:var(--gray-400); }
+  .public-submit { width:100%; height:48px; background:var(--kaem-600); color:#fff; border:none; border-radius:12px; font-size:15px; font-weight:600; font-family:inherit; cursor:pointer; transition:all .15s; box-shadow:0 2px 8px rgba(26,111,204,.3); margin-top:8px; }
+  .public-submit:hover { background:var(--kaem-700); box-shadow:0 4px 16px rgba(26,111,204,.35); transform:translateY(-1px); }
+  .public-footer { text-align:center; font-size:12px; color:var(--gray-400); margin-top:24px; }
+
+  /* === RESPONSE DASHBOARD === */
+  .resp-content { padding:32px; background:var(--gray-50); }
+  .resp-stats { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+  .resp-stat { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-card); padding:20px; display:flex; gap:12px; }
+  .resp-stat-accent { width:3px; border-radius:2px; flex-shrink:0; }
+  .resp-stat-num { font-size:28px; font-weight:700; color:var(--gray-900); }
+  .resp-stat-label { font-size:13px; color:var(--gray-500); margin-top:2px; }
+  .resp-chart { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-card); padding:20px; margin-bottom:24px; height:160px; display:flex; align-items:flex-end; gap:6px; padding-bottom:32px; }
+  .chart-bar { flex:1; background:linear-gradient(180deg, var(--kaem-400), var(--kaem-200)); border-radius:4px 4px 0 0; min-height:8px; transition:all .2s; position:relative; }
+  .chart-bar:hover { opacity:.8; }
+  .resp-table { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-card); overflow:hidden; }
+  .resp-table-header { display:grid; grid-template-columns:48px 1fr 120px 120px 140px; padding:12px 20px; font-size:12px; font-weight:600; color:var(--gray-500); text-transform:uppercase; letter-spacing:.5px; border-bottom:1px solid var(--gray-200); background:var(--gray-50); }
+  .resp-table-row { display:grid; grid-template-columns:48px 1fr 120px 120px 140px; padding:14px 20px; font-size:13px; color:var(--gray-700); border-bottom:1px solid var(--gray-100); transition:background .1s; cursor:pointer; }
+  .resp-table-row:hover { background:var(--kaem-50); }
+  .resp-table-row:last-child { border-bottom:none; }
+
+  /* === DESKTOP SIDEBAR === */
+  .desktop-wrap { display:flex; height:500px; border-radius:var(--radius); overflow:hidden; box-shadow:var(--shadow-form); }
+  .desktop-sidebar { width:220px; background:var(--kaem-900); padding:20px 12px; display:flex; flex-direction:column; flex-shrink:0; }
+  .desktop-logo { display:flex; align-items:center; gap:10px; padding:4px 8px; margin-bottom:24px; }
+  .desktop-logo .k { width:28px; height:28px; background:linear-gradient(135deg, var(--kaem-400), var(--kaem-500)); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:13px; }
+  .desktop-logo span { color:#fff; font-weight:600; font-size:15px; }
+  .desktop-menu { flex:1; }
+  .desktop-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px; font-size:13px; font-weight:500; color:rgba(255,255,255,.6); cursor:pointer; transition:all .15s; margin-bottom:2px; }
+  .desktop-item:hover { background:var(--kaem-800); color:rgba(255,255,255,.85); }
+  .desktop-item.active { background:var(--kaem-700); color:#fff; }
+  .desktop-item .icon { width:18px; text-align:center; }
+  .desktop-divider { height:1px; background:var(--kaem-800); margin:12px 0; }
+  .desktop-open-btn { display:flex; align-items:center; gap:8px; padding:10px 12px; border:1px solid var(--kaem-700); border-radius:8px; color:var(--kaem-300); font-size:12px; font-weight:500; cursor:pointer; transition:all .15s; background:none; width:100%; margin-bottom:16px; }
+  .desktop-open-btn:hover { background:var(--kaem-800); border-color:var(--kaem-600); }
+  .desktop-footer { font-size:11px; color:var(--kaem-700); padding:8px 12px; }
+  .desktop-footer .sync { display:flex; align-items:center; gap:6px; color:var(--kaem-400); margin-bottom:4px; }
+  .desktop-footer .sync .dot { width:6px; height:6px; background:var(--success); border-radius:50%; }
+  .desktop-content { flex:1; background:var(--gray-50); padding:32px; overflow-y:auto; }
+
+  /* === COMPONENTS SHOWCASE === */
+  .comp-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:16px; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; font-family:inherit; font-size:14px; font-weight:600; border:none; cursor:pointer; transition:all .15s; border-radius:10px; }
+  .btn-md { height:40px; padding:0 20px; }
+  .btn-lg { height:44px; padding:0 24px; }
+  .btn-sm { height:32px; padding:0 14px; font-size:12px; }
+  .btn-primary { background:var(--kaem-600); color:#fff; box-shadow:0 2px 6px rgba(26,111,204,.25); }
+  .btn-primary:hover { background:var(--kaem-700); box-shadow:0 4px 12px rgba(26,111,204,.3); transform:translateY(-1px); }
+  .btn-secondary { background:#fff; color:var(--kaem-600); border:1px solid var(--kaem-200); }
+  .btn-secondary:hover { background:var(--kaem-50); }
+  .btn-ghost { background:none; color:var(--gray-600); }
+  .btn-ghost:hover { background:var(--gray-100); }
+  .btn-danger { background:var(--error); color:#fff; }
+  .btn-danger:hover { background:#DC2626; }
+
+  .badge { display:inline-flex; align-items:center; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
+  .badge-pro { background:var(--kaem-500); color:#fff; }
+  .badge-free { background:var(--gray-200); color:var(--gray-600); }
+  .badge-trial { background:var(--warning); color:#fff; }
+  .badge-published { background:rgba(16,185,129,.1); color:var(--success); }
+  .badge-draft { background:var(--gray-100); color:var(--gray-500); }
+  .badge-closed { background:rgba(239,68,68,.1); color:var(--error); }
+
+  .input-demo { width:280px; height:40px; background:var(--gray-50); border:1px solid var(--gray-200); border-radius:10px; padding:0 12px; font-size:14px; font-family:inherit; color:var(--gray-900); outline:none; transition:all .15s; }
+  .input-demo:focus { border-color:var(--kaem-500); box-shadow:0 0 0 3px var(--kaem-100); background:#fff; }
+
+  .card-demo { background:#fff; border-radius:var(--radius); box-shadow:var(--shadow-card); padding:20px; max-width:320px; transition:all .15s; cursor:pointer; }
+  .card-demo:hover { box-shadow:var(--shadow-hover); transform:translateY(-1px); }
+
+  /* === SPACING DEMO === */
+  .spacing-row { display:flex; gap:8px; align-items:center; margin-bottom:8px; }
+  .spacing-box { background:var(--kaem-100); border:1px solid var(--kaem-200); border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:var(--kaem-600); }
+
+  @media (max-width:768px) {
+    .builder-wrap { grid-template-columns:1fr; height:auto; }
+    .builder-palette, .builder-props { display:none; }
+    .resp-stats { grid-template-columns:1fr; }
+    .ws-grid { grid-template-columns:1fr; }
+    .desktop-wrap { flex-direction:column; height:auto; }
+    .desktop-sidebar { width:100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="ref-nav">
+  <div class="ref-nav-inner">
+    <button class="ref-tab active" onclick="showSection('tokens')">Tokens</button>
+    <button class="ref-tab" onclick="showSection('navbar')">Navbar</button>
+    <button class="ref-tab" onclick="showSection('dashboard')">Dashboard</button>
+    <button class="ref-tab" onclick="showSection('workspace')">Workspace</button>
+    <button class="ref-tab" onclick="showSection('builder')">Form Builder</button>
+    <button class="ref-tab" onclick="showSection('public')">Form Publik</button>
+    <button class="ref-tab" onclick="showSection('responses')">Responses</button>
+    <button class="ref-tab" onclick="showSection('desktop')">Desktop</button>
+    <button class="ref-tab" onclick="showSection('components')">Components</button>
+  </div>
+</div>
+
+<!-- TOKENS -->
+<div id="tokens" class="section active">
+  <h2>Design Tokens</h2>
+  <p class="subtitle">Warna, tipografi, dan spacing yang diturunkan dari logo KaemForm</p>
+
+  <h3>Brand Colors (kaem)</h3>
+  <div class="color-grid">
+    <div class="color-swatch"><div class="swatch" style="background:var(--kaem-50)"></div><div class="info"><div class="name">kaem-50</div><div class="hex">#EBF5FF</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--kaem-100)"></div><div class="info"><div class="name">kaem-100</div><div class="hex">#D6EBFF</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--kaem-200)"></div><div class="info"><div class="name">kaem-200</div><div class="hex">#ADD6FF</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--kaem-300)"></div><div class="info"><div class="name">kaem-300</div><div class="hex">#7ABFFF</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--kaem-400)"></div><div class="info"><div class="name">kaem-400</div><div class="hex">#4DA3FF</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--kaem-500)"></div><div class="info"><div class="name">kaem-500</div><div class="hex">#2E86DE</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--kaem-600)"></div><div class="info"><div class="name">kaem-600</div><div class="hex">#1A6FCC</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--kaem-700)"></div><div class="info"><div class="name">kaem-700</div><div class="hex">#1456A8</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--kaem-800)"></div><div class="info"><div class="name">kaem-800</div><div class="hex">#0D3F7F</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--kaem-900)"></div><div class="info"><div class="name">kaem-900</div><div class="hex">#0A2D5C</div></div></div>
+  </div>
+
+  <h3>Neutrals</h3>
+  <div class="color-grid">
+    <div class="color-swatch"><div class="swatch" style="background:var(--gray-50)"></div><div class="info"><div class="name">gray-50</div><div class="hex">#F8FAFC</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--gray-100)"></div><div class="info"><div class="name">gray-100</div><div class="hex">#F1F5F9</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--gray-200)"></div><div class="info"><div class="name">gray-200</div><div class="hex">#E2E8F0</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--gray-300)"></div><div class="info"><div class="name">gray-300</div><div class="hex">#CBD5E1</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--gray-400)"></div><div class="info"><div class="name">gray-400</div><div class="hex">#94A3B8</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--gray-500)"></div><div class="info"><div class="name">gray-500</div><div class="hex">#64748B</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--gray-700)"></div><div class="info"><div class="name">gray-700</div><div class="hex">#334155</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--gray-900)"></div><div class="info"><div class="name">gray-900</div><div class="hex">#0F172A</div></div></div>
+  </div>
+
+  <h3>Semantic</h3>
+  <div class="color-grid">
+    <div class="color-swatch"><div class="swatch" style="background:var(--success)"></div><div class="info"><div class="name">success</div><div class="hex">#10B981</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--warning)"></div><div class="info"><div class="name">warning</div><div class="hex">#F59E0B</div></div></div>
+    <div class="color-swatch"><div class="swatch" style="background:var(--error)"></div><div class="info"><div class="name">error</div><div class="hex">#EF4444</div></div></div>
+  </div>
+
+  <h3>Typography Scale (Inter)</h3>
+  <div class="type-row"><div class="type-label">3XL / 30</div><div class="type-sample" style="font-size:30px;font-weight:700">128 Respons</div></div>
+  <div class="type-row"><div class="type-label">2XL / 24</div><div class="type-sample" style="font-size:24px;font-weight:700">Workspace Anda</div></div>
+  <div class="type-row"><div class="type-label">XL / 20</div><div class="type-sample" style="font-size:20px;font-weight:600">Selamat datang, Kaemnur</div></div>
+  <div class="type-row"><div class="type-label">LG / 16</div><div class="type-sample" style="font-size:16px;font-weight:600">Puslapdik</div></div>
+  <div class="type-row"><div class="type-label">Base / 14</div><div class="type-sample" style="font-size:14px;font-weight:400">Isi data berikut dengan lengkap.</div></div>
+  <div class="type-row"><div class="type-label">SM / 13</div><div class="type-sample" style="font-size:13px;font-weight:400;color:var(--gray-500)">5 formulir · 128 respons</div></div>
+  <div class="type-row"><div class="type-label">XS / 12</div><div class="type-sample" style="font-size:12px;font-weight:600;color:var(--gray-400);text-transform:uppercase;letter-spacing:.5px">PILIHAN</div></div>
+</div>
+
+<!-- NAVBAR -->
+<div id="navbar" class="section">
+  <h2>Navbar</h2>
+  <p class="subtitle">Gradient top bar 3px sebagai identitas brand di setiap halaman</p>
+  <div class="mockup-label">Navbar — Default</div>
+  <div class="mockup-frame">
+    <div class="nav-gradient"></div>
+    <div class="nav-bar">
+      <div class="nav-left"><div class="nav-logo">K</div><span class="nav-brand">KaemForm</span></div>
+      <div class="nav-right">
+        <span class="nav-badge">Pro</span>
+        <div class="nav-user"><div class="nav-avatar">K</div><span>kaemnur.ai@gmail.com</span> <span style="font-size:10px">▼</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mockup-label" style="margin-top:32px">Navbar — Free Tier</div>
+  <div class="mockup-frame">
+    <div class="nav-gradient"></div>
+    <div class="nav-bar">
+      <div class="nav-left"><div class="nav-logo">K</div><span class="nav-brand">KaemForm</span></div>
+      <div class="nav-right">
+        <span class="badge badge-free">Free</span>
+        <button class="btn btn-primary btn-sm">Upgrade</button>
+        <div class="nav-user"><div class="nav-avatar">U</div><span>user@email.com</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="section">
+  <h2>Dashboard</h2>
+  <p class="subtitle">Greeting personal + stats bar + workspace cards dengan accent bar</p>
+  <div class="mockup-frame">
+    <div class="nav-gradient"></div>
+    <div class="nav-bar">
+      <div class="nav-left"><div class="nav-logo">K</div><span class="nav-brand">KaemForm</span></div>
+      <div class="nav-right"><span class="nav-badge">Pro</span><div class="nav-user"><div class="nav-avatar">K</div><span>kaemnur.ai@gmail.com</span></div></div>
+    </div>
+    <div class="dash-content">
+      <div class="dash-greeting">Selamat datang, Kaemnur 👋</div>
+      <div class="stats-bar">
+        <div class="stat-item"><div class="stat-num">7</div><div class="stat-label">Formulir</div></div>
+        <div class="stat-item"><div class="stat-num">156</div><div class="stat-label">Respons</div></div>
+        <div class="stat-item"><div class="stat-num">2</div><div class="stat-label">Workspace</div></div>
+      </div>
+      <div class="dash-header">
+        <div class="dash-title">Workspace Anda</div>
+        <button class="btn btn-primary btn-sm">+ Buat Workspace Baru</button>
+      </div>
+      <div class="ws-grid">
+        <div class="ws-card"><div class="ws-accent" style="background:var(--kaem-500)"></div><div class="ws-body"><div class="ws-name">Puslapdik</div><div class="ws-meta"><span>📋 5 formulir</span><span>📨 128 respons</span></div><div class="ws-date">Dibuat 15 Juni 2026</div><a href="#" class="ws-link" onclick="return false">Buka →</a></div></div>
+        <div class="ws-card"><div class="ws-accent" style="background:var(--kaem-400)"></div><div class="ws-body"><div class="ws-name">Organisasi Mahasiswa</div><div class="ws-meta"><span>📋 2 formulir</span><span>📨 28 respons</span></div><div class="ws-date">Dibuat 10 Juni 2026</div><a href="#" class="ws-link" onclick="return false">Buka →</a></div></div>
+        <div class="ws-card"><div class="ws-accent" style="background:var(--kaem-300)"></div><div class="ws-body"><div class="ws-name">Proyek Penelitian</div><div class="ws-meta"><span>📋 3 formulir</span><span>📨 0 respons</span></div><div class="ws-date">Dibuat 8 Juni 2026</div><a href="#" class="ws-link" onclick="return false">Buka →</a></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WORKSPACE -->
+<div id="workspace" class="section">
+  <h2>Workspace Dashboard</h2>
+  <p class="subtitle">Form list view dengan status dots dan URL publik</p>
+  <div class="mockup-frame">
+    <div class="nav-gradient"></div>
+    <div class="nav-bar">
+      <div class="nav-left" style="gap:16px"><span style="color:var(--gray-400);font-size:13px;cursor:pointer">← Workspace</span><span style="font-size:16px;font-weight:600;color:var(--gray-900)">Puslapdik</span></div>
+      <div class="nav-right"><button class="btn btn-ghost btn-sm">⚙ Settings</button></div>
+    </div>
+    <div class="dash-content">
+      <div class="stats-bar" style="background:#fff;border-color:var(--gray-200)">
+        <div class="stat-item"><div class="stat-num" style="color:var(--gray-900)">5</div><div class="stat-label">Total</div></div>
+        <div class="stat-item"><div class="stat-num" style="color:var(--success)">3</div><div class="stat-label">Published</div></div>
+        <div class="stat-item"><div class="stat-num" style="color:var(--gray-400)">2</div><div class="stat-label">Draf</div></div>
+        <div class="stat-item"><div class="stat-num" style="color:var(--kaem-500)">128</div><div class="stat-label">Respons</div></div>
+      </div>
+      <div class="dash-header">
+        <div class="dash-title">Formulir</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm">Filter ▾</button>
+          <button class="btn btn-ghost btn-sm">Sort ▾</button>
+          <button class="btn btn-primary btn-sm">+ Buat</button>
+        </div>
+      </div>
+      <div class="form-list">
+        <div class="form-row">
+          <div class="form-info">
+            <div class="form-name">Daftar Hadir Rapat Pimpinan</div>
+            <div class="form-meta-row"><span><span class="status-dot published"></span>Published</span><span>📨 45 respons</span><span>📅 15 Jun 2026</span></div>
+            <div class="form-url">form.kaemnur.com/k7x2m9pq</div>
+          </div>
+          <div class="form-actions">⋮</div>
+        </div>
+        <div class="form-row">
+          <div class="form-info">
+            <div class="form-name">Survei Kepuasan Layanan 2026</div>
+            <div class="form-meta-row"><span><span class="status-dot published"></span>Published</span><span>📨 83 respons</span><span>📅 12 Jun 2026</span></div>
+            <div class="form-url">form.kaemnur.com/survei-layanan</div>
+          </div>
+          <div class="form-actions">⋮</div>
+        </div>
+        <div class="form-row">
+          <div class="form-info">
+            <div class="form-name">Pendataan Pegawai Baru</div>
+            <div class="form-meta-row"><span><span class="status-dot draft"></span>Draf</span><span>📨 0 respons</span><span>📅 14 Jun 2026</span></div>
+          </div>
+          <div class="form-actions">⋮</div>
+        </div>
+        <div class="form-row">
+          <div class="form-info">
+            <div class="form-name">Registrasi Workshop Data Science</div>
+            <div class="form-meta-row"><span><span class="status-dot closed"></span>Ditutup</span><span>📨 120 respons</span><span>📅 5 Jun 2026</span></div>
+          </div>
+          <div class="form-actions">⋮</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BUILDER -->
+<div id="builder" class="section">
+  <h2>Form Builder</h2>
+  <p class="subtitle">Canvas abu-abu, field cards putih dengan selected accent, properties panel</p>
+  <div class="mockup-frame">
+    <div class="nav-gradient"></div>
+    <div class="nav-bar">
+      <div class="nav-left" style="gap:16px">
+        <span style="color:var(--gray-400);font-size:13px;cursor:pointer">← Puslapdik</span>
+        <span style="font-size:15px;font-weight:600;color:var(--gray-900)">Daftar Hadir Rapat</span>
+        <span class="badge badge-draft">Draf</span>
+      </div>
+      <div class="nav-right" style="gap:12px">
+        <span style="font-size:12px;color:var(--success)">✓ Tersimpan</span>
+        <button class="btn btn-secondary btn-sm">👁 Pratinjau</button>
+        <button class="btn btn-primary btn-sm">Publikasikan</button>
+      </div>
+    </div>
+    <div class="builder-wrap">
+      <div class="builder-palette">
+        <div class="palette-group">TEKS</div>
+        <div class="palette-item"><div class="palette-icon">T</div>Teks Singkat</div>
+        <div class="palette-item"><div class="palette-icon">≡</div>Teks Panjang</div>
+        <div class="palette-item"><div class="palette-icon">¶</div>Paragraf</div>
+        <div class="palette-group">PILIHAN</div>
+        <div class="palette-item"><div class="palette-icon">◎</div>Pilihan Tunggal</div>
+        <div class="palette-item"><div class="palette-icon">☐</div>Pilihan Ganda</div>
+        <div class="palette-item"><div class="palette-icon">▾</div>Dropdown</div>
+        <div class="palette-group">INPUT</div>
+        <div class="palette-item"><div class="palette-icon">#</div>Angka</div>
+        <div class="palette-item"><div class="palette-icon">@</div>Email</div>
+        <div class="palette-item"><div class="palette-icon">📞</div>Telepon</div>
+        <div class="palette-group">WAKTU</div>
+        <div class="palette-item"><div class="palette-icon">📅</div>Tanggal</div>
+        <div class="palette-item"><div class="palette-icon">🕐</div>Waktu</div>
+        <div class="palette-group">LAINNYA</div>
+        <div class="palette-item"><div class="palette-icon">⊞</div>Skala</div>
+        <div class="palette-item"><div class="palette-icon">✍</div>Tanda Tangan</div>
+        <div class="palette-item"><div class="palette-icon">─</div>Section</div>
+      </div>
+      <div class="builder-canvas">
+        <div class="canvas-inner">
+          <div class="field-card selected">
+            <div class="field-actions"><button class="field-action-btn">⋮⋮</button><button class="field-action-btn" style="color:var(--error)">🗑</button></div>
+            <div class="field-label">Nama <span class="req">*</span></div>
+            <div class="field-input">Nama lengkap</div>
+          </div>
+          <div class="field-card">
+            <div class="field-actions"><button class="field-action-btn">⋮⋮</button><button class="field-action-btn" style="color:var(--error)">🗑</button></div>
+            <div class="field-label">Jabatan <span class="req">*</span></div>
+            <div class="field-input">Jabatan / posisi</div>
+          </div>
+          <div class="field-card">
+            <div class="field-actions"><button class="field-action-btn">⋮⋮</button><button class="field-action-btn" style="color:var(--error)">🗑</button></div>
+            <div class="field-label">Instansi <span class="req">*</span></div>
+            <div class="field-input">Nama instansi</div>
+          </div>
+          <div class="field-card">
+            <div class="field-actions"><button class="field-action-btn">⋮⋮</button><button class="field-action-btn" style="color:var(--error)">🗑</button></div>
+            <div class="field-label">Provinsi</div>
+            <select class="field-select"><option>Aceh</option></select>
+          </div>
+          <div class="field-card">
+            <div class="field-actions"><button class="field-action-btn">⋮⋮</button><button class="field-action-btn" style="color:var(--error)">🗑</button></div>
+            <div class="field-label">Tanda Tangan <span class="req">*</span></div>
+            <div class="field-sig">Area tanda tangan</div>
+          </div>
+          <button class="add-field-btn">+ Tambah Field</button>
+        </div>
+      </div>
+      <div class="builder-props">
+        <div class="props-header"><span style="font-size:16px">T</span> TEKS SINGKAT</div>
+        <div class="props-group"><div class="props-label">Label</div><input class="props-input" value="Nama"></div>
+        <div class="props-group"><div class="props-label">Placeholder</div><input class="props-input" value="Nama lengkap"></div>
+        <div class="props-group"><div class="props-label">Deskripsi</div><input class="props-input" placeholder="Opsional"></div>
+        <div class="props-group"><div class="props-toggle"><div class="toggle on" onclick="this.classList.toggle('on')"></div>Wajib diisi</div></div>
+        <div class="props-divider"></div>
+        <div style="font-size:12px;font-weight:600;color:var(--gray-500);margin-bottom:12px">VALIDASI</div>
+        <div class="props-group"><div class="props-label">Panjang minimal</div><input class="props-input" type="number" value="2"></div>
+        <div class="props-group"><div class="props-label">Panjang maksimal</div><input class="props-input" type="number" value="100"></div>
+        <div class="props-divider"></div>
+        <div style="font-size:12px;font-weight:600;color:var(--gray-500);margin-bottom:12px">KONDISI</div>
+        <div class="props-group"><div class="props-toggle"><div class="toggle" onclick="this.classList.toggle('on')"></div>Tampilkan dengan kondisi</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PUBLIC FORM -->
+<div id="public" class="section">
+  <h2>Form Publik</h2>
+  <p class="subtitle">Centered card, gradient divider, input yang nyaman, submit yang premium</p>
+  <div class="mockup-frame">
+    <div class="public-page">
+      <div class="public-card">
+        <div class="public-logo"><div class="nav-logo">K</div><span>KaemForm</span></div>
+        <div class="public-title">Daftar Hadir Rapat Pimpinan</div>
+        <div class="public-desc">Isi data berikut dengan lengkap dan benar.</div>
+        <div class="public-divider"></div>
+        <div class="public-field"><label>Nama <span class="req">*</span></label><input placeholder="Nama lengkap"></div>
+        <div class="public-field"><label>Jabatan <span class="req">*</span></label><input placeholder="Jabatan / posisi"></div>
+        <div class="public-field"><label>Instansi <span class="req">*</span></label><input placeholder="Nama instansi"></div>
+        <div class="public-field"><label>Provinsi</label><select style="width:100%;height:44px;background:var(--gray-50);border:1px solid var(--gray-200);border-radius:10px;padding:0 14px;font-size:14px;font-family:inherit"><option>Pilih provinsi...</option></select></div>
+        <button class="public-submit">Kirim</button>
+        <div class="public-footer">Dibuat dengan KaemForm</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RESPONSES -->
+<div id="responses" class="section">
+  <h2>Response Dashboard</h2>
+  <p class="subtitle">Stat cards dengan accent, chart area, tabel bersih</p>
+  <div class="mockup-frame">
+    <div class="nav-gradient"></div>
+    <div class="nav-bar">
+      <div class="nav-left" style="gap:16px"><span style="color:var(--gray-400);font-size:13px">← Daftar Hadir</span><span style="font-weight:600;color:var(--gray-900)">Respons</span></div>
+      <div class="nav-right"><button class="btn btn-secondary btn-sm">📥 CSV</button><button class="btn btn-primary btn-sm">📄 PDF</button></div>
+    </div>
+    <div class="resp-content">
+      <div class="resp-stats">
+        <div class="resp-stat"><div class="resp-stat-accent" style="background:var(--kaem-500)"></div><div><div class="resp-stat-num">128</div><div class="resp-stat-label">Total Respons</div></div></div>
+        <div class="resp-stat"><div class="resp-stat-accent" style="background:var(--success)"></div><div><div class="resp-stat-num">12</div><div class="resp-stat-label">Hari Ini</div></div></div>
+        <div class="resp-stat"><div class="resp-stat-accent" style="background:var(--kaem-300)"></div><div><div class="resp-stat-num">45</div><div class="resp-stat-label">Minggu Ini</div></div></div>
+      </div>
+      <div class="resp-chart">
+        <div class="chart-bar" style="height:30%"></div><div class="chart-bar" style="height:45%"></div><div class="chart-bar" style="height:25%"></div><div class="chart-bar" style="height:60%"></div><div class="chart-bar" style="height:40%"></div><div class="chart-bar" style="height:55%"></div><div class="chart-bar" style="height:80%"></div><div class="chart-bar" style="height:65%"></div><div class="chart-bar" style="height:50%"></div><div class="chart-bar" style="height:70%"></div><div class="chart-bar" style="height:45%"></div><div class="chart-bar" style="height:90%"></div><div class="chart-bar" style="height:75%"></div><div class="chart-bar" style="height:55%"></div>
+      </div>
+      <div class="resp-table">
+        <div class="resp-table-header"><div>#</div><div>Nama</div><div>Jabatan</div><div>Instansi</div><div>Waktu</div></div>
+        <div class="resp-table-row"><div>1</div><div style="font-weight:500;color:var(--gray-900)">Ahmad Fauzi</div><div>Kepala Bagian</div><div>Dinas Pendidikan</div><div>15 Jun, 14:30</div></div>
+        <div class="resp-table-row"><div>2</div><div style="font-weight:500;color:var(--gray-900)">Budi Santoso</div><div>Staff</div><div>Dinas Kesehatan</div><div>15 Jun, 14:25</div></div>
+        <div class="resp-table-row" style="background:var(--gray-50)"><div>3</div><div style="font-weight:500;color:var(--gray-900)">Citra Dewi</div><div>Sekretaris</div><div>Bappeda</div><div>15 Jun, 14:20</div></div>
+        <div class="resp-table-row"><div>4</div><div style="font-weight:500;color:var(--gray-900)">Dian Permata</div><div>Kepala Dinas</div><div>Diskominfo</div><div>15 Jun, 13:55</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DESKTOP -->
+<div id="desktop" class="section">
+  <h2>Desktop App</h2>
+  <p class="subtitle">Sidebar dark kaem-900 + content area terang</p>
+  <div class="desktop-wrap">
+    <div class="desktop-sidebar">
+      <div class="desktop-logo"><div class="k">K</div><span>KaemForm</span></div>
+      <div class="desktop-menu">
+        <div class="desktop-item active"><span class="icon">📊</span>Dashboard</div>
+        <div class="desktop-item"><span class="icon">📄</span>Generate</div>
+        <div class="desktop-item"><span class="icon">📋</span>Template</div>
+        <div class="desktop-item"><span class="icon">📁</span>Data</div>
+        <div class="desktop-item"><span class="icon">📈</span>Rekap</div>
+        <div class="desktop-item"><span class="icon">🕐</span>Riwayat</div>
+        <div class="desktop-divider"></div>
+        <div class="desktop-item"><span class="icon">⚙</span>Settings</div>
+      </div>
+      <button class="desktop-open-btn">🔗 Buka Workspace (Web)</button>
+      <div class="desktop-footer">
+        <div class="sync"><div class="dot"></div>Tersinkronkan · 2 menit lalu</div>
+        <div>v1.0.0</div>
+      </div>
+    </div>
+    <div class="desktop-content">
+      <div style="font-size:20px;font-weight:600;color:var(--gray-900);margin-bottom:24px">Selamat datang, Kaemnur</div>
+      <div style="font-size:13px;color:var(--gray-500);margin-bottom:8px">Workspace aktif</div>
+      <div class="card-demo" style="margin-bottom:24px;max-width:100%">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div><div style="font-size:16px;font-weight:600;color:var(--gray-900)">Puslapdik</div><div style="font-size:13px;color:var(--gray-500);margin-top:4px">5 formulir · 128 respons · Terakhir sync 2 menit lalu</div></div>
+          <button class="btn btn-secondary btn-sm">🔄 Sync</button>
+        </div>
+      </div>
+      <div style="font-size:14px;font-weight:600;color:var(--gray-900);margin-bottom:16px">Quick Actions</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">
+        <div class="card-demo" style="text-align:center;max-width:100%"><div style="font-size:24px;margin-bottom:8px">📄</div><div style="font-size:13px;font-weight:600;color:var(--gray-900)">Generate Dokumen</div></div>
+        <div class="card-demo" style="text-align:center;max-width:100%"><div style="font-size:24px;margin-bottom:8px">📋</div><div style="font-size:13px;font-weight:600;color:var(--gray-900)">Upload Template</div></div>
+        <div class="card-demo" style="text-align:center;max-width:100%"><div style="font-size:24px;margin-bottom:8px">📈</div><div style="font-size:13px;font-weight:600;color:var(--gray-900)">Buat Rekap</div></div>
+      </div>
+      <div style="font-size:14px;font-weight:600;color:var(--gray-900);margin-bottom:12px">Aktivitas Terakhir</div>
+      <div style="font-size:13px;color:var(--gray-500);padding:12px 0;border-bottom:1px solid var(--gray-100)">📄 Generate 50 biodata dari "Template Biodata Pegawai" — 2 jam lalu</div>
+      <div style="font-size:13px;color:var(--gray-500);padding:12px 0;border-bottom:1px solid var(--gray-100)">📈 Rekap Excel "Daftar Hadir Juni" — kemarin</div>
+      <div style="font-size:13px;color:var(--gray-500);padding:12px 0">📋 Upload template "Surat Tugas.docx" — 2 hari lalu</div>
+    </div>
+  </div>
+</div>
+
+<!-- COMPONENTS -->
+<div id="components" class="section">
+  <h2>Components</h2>
+  <p class="subtitle">Tombol, badge, input, card — building blocks UI</p>
+
+  <h3>Buttons</h3>
+  <div class="comp-row">
+    <button class="btn btn-primary btn-lg">Primary Large</button>
+    <button class="btn btn-primary btn-md">Primary</button>
+    <button class="btn btn-primary btn-sm">Primary Sm</button>
+  </div>
+  <div class="comp-row">
+    <button class="btn btn-secondary btn-md">Secondary</button>
+    <button class="btn btn-ghost btn-md">Ghost</button>
+    <button class="btn btn-danger btn-md">Danger</button>
+  </div>
+
+  <h3>Badges</h3>
+  <div class="comp-row">
+    <span class="badge badge-pro">Pro</span>
+    <span class="badge badge-free">Free</span>
+    <span class="badge badge-trial">Trial</span>
+    <span class="badge badge-published">Published</span>
+    <span class="badge badge-draft">Draf</span>
+    <span class="badge badge-closed">Ditutup</span>
+  </div>
+
+  <h3>Inputs</h3>
+  <div class="comp-row">
+    <input class="input-demo" placeholder="Klik untuk melihat focus state">
+    <input class="input-demo" value="Input dengan isi">
+  </div>
+
+  <h3>Cards</h3>
+  <div class="comp-row">
+    <div class="card-demo">
+      <div style="font-size:14px;font-weight:600;color:var(--gray-900);margin-bottom:4px">Card Default</div>
+      <div style="font-size:13px;color:var(--gray-500)">Hover untuk melihat shadow elevation</div>
+    </div>
+    <div style="background:#fff;border-radius:var(--radius);box-shadow:var(--shadow-card);overflow:hidden;max-width:320px;display:flex;cursor:pointer;transition:all .15s" onmouseenter="this.style.boxShadow='var(--shadow-hover)';this.style.transform='translateY(-1px)'" onmouseleave="this.style.boxShadow='var(--shadow-card)';this.style.transform='none'">
+      <div style="width:4px;background:var(--kaem-500);flex-shrink:0"></div>
+      <div style="padding:16px">
+        <div style="font-size:14px;font-weight:600;color:var(--gray-900);margin-bottom:4px">Card dengan Accent</div>
+        <div style="font-size:13px;color:var(--gray-500)">Left border accent kaem-500</div>
+      </div>
+    </div>
+  </div>
+
+  <h3>Toggle</h3>
+  <div class="comp-row">
+    <div class="props-toggle"><div class="toggle on" onclick="this.classList.toggle('on')"></div>Aktif — klik untuk toggle</div>
+    <div class="props-toggle"><div class="toggle" onclick="this.classList.toggle('on')"></div>Nonaktif</div>
+  </div>
+
+  <h3>Gradient Accent</h3>
+  <div style="margin-bottom:16px">
+    <div style="height:3px;background:linear-gradient(90deg,var(--kaem-400),var(--kaem-600));border-radius:2px;margin-bottom:8px"></div>
+    <div style="font-size:12px;color:var(--gray-400)">Navbar top bar (3px) — identitas brand di setiap halaman</div>
+  </div>
+  <div>
+    <div style="height:2px;background:linear-gradient(90deg,var(--kaem-200),transparent);border-radius:1px;margin-bottom:8px"></div>
+    <div style="font-size:12px;color:var(--gray-400)">Form divider — subtle brand accent di form publik</div>
+  </div>
+</div>
+
+<script>
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.ref-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

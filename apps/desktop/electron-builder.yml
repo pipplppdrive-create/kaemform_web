@@ -1,0 +1,21 @@
+appId: com.kaemnur.kaemform
+productName: KaemForm Desktop
+directories:
+  buildResources: resources
+  output: dist
+files:
+  - out/**/*
+  - package.json
+asarUnpack:
+  - node_modules/better-sqlite3/**/*
+win:
+  executableName: KaemForm
+  target:
+    - nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+protocols:
+  - name: KaemForm
+    schemes:
+      - kaemform
