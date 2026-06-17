@@ -18,10 +18,16 @@
     "plugins": [{ "name": "next" }],
     "paths": {
       "@/*": ["./src/*"],
-      "@kaemform/shared": ["./src/lib/shared/index.ts"],
-      "@kaemform/shared/*": ["./src/lib/shared/*"]
+      "@kaemform/shared": ["./packages/shared/src/index.ts"],
+      "@kaemform/shared/*": ["./packages/shared/src/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "next-env.d.ts",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "packages/shared/src/**/*.ts",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": ["node_modules", "apps", "docs"]
 }

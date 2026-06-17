@@ -29,6 +29,7 @@ release/
 .electron-builder-cache/
 .localappdata/
 .git-local/
+apps/web/
 apps/desktop/.vite/
 apps/desktop/.electron-vite/
 
