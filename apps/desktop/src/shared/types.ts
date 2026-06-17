@@ -121,6 +121,7 @@ export interface RekapParams {
 export interface DesktopAPI {
   auth: {
     login: () => Promise<{ configured: boolean }>;
+    password: (email: string, password: string) => Promise<DesktopUser>;
     local: () => Promise<DesktopUser>;
     logout: () => Promise<void>;
     session: () => Promise<DesktopUser | null>;

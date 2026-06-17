@@ -18,7 +18,13 @@ port = 54323
 [auth]
 enabled = true
 site_url = "http://localhost:3000"
-additional_redirect_urls = ["http://localhost:3000/auth/callback", "http://localhost:3000/auth/google/callback"]
+additional_redirect_urls = [
+  "http://localhost:3000/auth/callback",
+  "http://localhost:3000/auth/google/callback",
+  "https://form.kaemnur.com/auth/callback",
+  "https://form.kaemnur.com/auth/google/callback",
+  "kaemform://auth/callback"
+]
 jwt_expiry = 3600
 enable_signup = true
 

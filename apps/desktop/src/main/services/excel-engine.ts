@@ -3,6 +3,7 @@ import path from "node:path";
 import ExcelJS from "exceljs";
 import type { RekapParams } from "../../shared/types";
 import { sanitizeFilename } from "./file-manager";
+import { signatureToPng } from "./signature-image";
 
 export async function readSpreadsheet(
   filePath: string
@@ -17,13 +18,14 @@ export async function readSpreadsheet(
   if (!worksheet) return { headers: [], rows: [] };
 
   const headerRow = worksheet.getRow(1);
-  const headers = headerRow.values
+  const headerValues = Array.isArray(headerRow.values) ? headerRow.values : [];
+  const headers = headerValues
     .slice(1)
     .map((value, index) => String(value ?? `Kolom ${index + 1}`).trim());
   const rows: Record<string, unknown>[] = [];
   worksheet.eachRow((row, rowNumber) => {
     if (rowNumber === 1) return;
-    const values = row.values.slice(1);
+    const values = Array.isArray(row.values) ? row.values.slice(1) : [];
     const record = Object.fromEntries(
       headers.map((header, index) => [header, normalizeCell(values[index])])
     );
@@ -57,7 +59,37 @@ export async function generateRecap(
     { header: "No.", key: "__number", width: 8 },
     ...params.columns.map((column) => ({ header: column, key: column, width: 18 })),
   ];
-  params.rows.forEach((row, index) => dataSheet.addRow({ __number: index + 1, ...row }));
+  const signatureColumns = new Set<string>();
+  const signatureImages: Array<{
+    row: number;
+    column: number;
+    buffer: Buffer;
+    width: number;
+    height: number;
+  }> = [];
+
+  params.rows.forEach((sourceRow, index) => {
+    const values: Record<string, unknown> = { __number: index + 1 };
+    params.columns.forEach((column, columnIndex) => {
+      const signature = signatureToPng(sourceRow[column]);
+      if (signature) {
+        values[column] = "";
+        signatureColumns.add(column);
+        signatureImages.push({
+          row: index + 2,
+          column: columnIndex + 2,
+          ...signature,
+        });
+        return;
+      }
+      const value = sourceRow[column];
+      values[column] =
+        Array.isArray(value) ? value.join(", ") : value && typeof value === "object"
+          ? JSON.stringify(value)
+          : value ?? "";
+    });
+    dataSheet.addRow(values);
+  });
   dataSheet.getRow(1).eachCell((cell) => {
     cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
     cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1A6FCC" } };
@@ -75,11 +107,38 @@ export async function generateRecap(
     });
   });
   dataSheet.columns.forEach((column) => {
+    if (typeof column.key === "string" && signatureColumns.has(column.key)) {
+      column.width = 34;
+      return;
+    }
     let maxLength = String(column.header ?? "").length;
     column.eachCell?.({ includeEmpty: true }, (cell) => {
       maxLength = Math.max(maxLength, String(cell.value ?? "").length);
     });
     column.width = Math.min(Math.max(maxLength + 3, 10), 42);
+  });
+
+  signatureImages.forEach((image) => {
+    const scale = Math.min(220 / image.width, 72 / image.height);
+    const displayWidth = Math.round(image.width * scale);
+    const displayHeight = Math.round(image.height * scale);
+    const imageId = workbook.addImage({
+      base64: `data:image/png;base64,${image.buffer.toString("base64")}`,
+      extension: "png",
+    });
+    dataSheet.getRow(image.row).height = Math.max(
+      dataSheet.getRow(image.row).height ?? 15,
+      displayHeight * 0.75 + 8
+    );
+    dataSheet.getCell(image.row, image.column).alignment = {
+      vertical: "middle",
+      horizontal: "center",
+    };
+    dataSheet.addImage(imageId, {
+      tl: { col: image.column - 1 + 0.12, row: image.row - 1 + 0.1 },
+      ext: { width: displayWidth, height: displayHeight },
+      editAs: "oneCell",
+    });
   });
 
   const summary = workbook.addWorksheet("Ringkasan");

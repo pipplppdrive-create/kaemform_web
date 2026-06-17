@@ -120,7 +120,7 @@ function documentPreview(
   record: Record<string, unknown> = {},
   mapping: Record<string, string> = {}
 ): string {
-  return `<article class="document-preview"><header><div class="mark">K</div><div><small>KAEMFORM DOCUMENT</small><h1>${template.name}</h1></div></header><div class="line"></div><section>${template.placeholders
+  return `<article class="document-preview"><header><img class="mark" src="./kaemform.png" alt="KaemForm" /><div><small>KAEMFORM DOCUMENT</small><h1>${template.name}</h1></div></header><div class="line"></div><section>${template.placeholders
     .map(
       (placeholder) =>
         `<div class="row"><span>${placeholder}</span><strong>${String(
@@ -133,6 +133,16 @@ function documentPreview(
 const mockApi: DesktopAPI = {
   auth: {
     login: async () => ({ configured: false }),
+    password: async (email) => {
+      mockUser = {
+        id: "cloud-demo",
+        name: email.split("@")[0] || "KaemForm",
+        email,
+        mode: "cloud",
+      };
+      authListeners.forEach((listener) => listener(mockUser));
+      return mockUser;
+    },
     local: async () => {
       mockUser = {
         id: "local-demo",

@@ -45,21 +45,20 @@ Solusi: Launch Token Pattern + Direct Login.
 
 ```
 User login Kaemnur → klik "Buka KaemForm"
-→ Kaemnur Edge Function generate-launch-token
+→ Kaemnur launch endpoint (`/api/products/kaemform/launch` or Edge Function)
 → JWT signed HMAC-SHA256 (secret: LAUNCH_TOKEN_SECRET, expiry: 60s)
 → Payload: {kaemnur_uid, email, name, avatar_url, license{type, expires_at, storage_addon}}
 → Redirect: form.kaemnur.com/auth/callback?token=xxx
 → KaemForm validates token → create/update user → set session → /app
 ```
 
-### Path 2: Direct Google OAuth
+### Path 2: Google OAuth via Kaemnur
 
 ```
 User buka form.kaemnur.com → klik "Masuk dengan Google"
-→ Supabase Auth B → Google OAuth
-→ Callback → check user di KaemForm DB
-→ Jika belum ada: call Kaemnur API check-license → create user
-→ Jika sudah ada: refresh license jika stale (>24 jam)
+→ kaemnur.com `/api/products/kaemform/web-login`
+→ Kaemnur Auth/Google OAuth → launch token → KaemForm callback
+→ Callback → create/update user, cache license, set session
 → /app
 ```
 

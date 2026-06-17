@@ -99,6 +99,9 @@
       "invalid_credentials": "Incorrect email or password.",
       "email_in_use": "Email is already in use.",
       "weak_password": "Password must be at least 8 characters.",
+      "provider_disabled": "Google login is handled through Kaemnur. Sign in at kaemnur.com, then open KaemForm.",
+      "bridge_unconfigured": "The Kaemnur login connection has not been configured. Contact the administrator.",
+      "account_conflict": "This Kaemnur account is already connected to another KaemForm account. Contact the administrator.",
       "unknown": "Something went wrong while signing in. Please try again."
     }
   },

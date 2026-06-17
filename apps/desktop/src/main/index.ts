@@ -32,6 +32,9 @@ async function handleProtocol(url: string): Promise<void> {
 }
 
 function createWindow(): BrowserWindow {
+  const iconPath = app.isPackaged
+    ? path.join(process.resourcesPath, "kaemform.png")
+    : path.join(__dirname, "../../resources/icon.png");
   const window = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -39,6 +42,7 @@ function createWindow(): BrowserWindow {
     minHeight: 640,
     show: false,
     title: "KaemForm Desktop",
+    icon: iconPath,
     backgroundColor: "#F8FAFC",
     autoHideMenuBar: true,
     webPreferences: {

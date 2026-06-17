@@ -8,6 +8,9 @@ const KNOWN_ERRORS = [
   "invalid_credentials",
   "email_in_use",
   "weak_password",
+  "provider_disabled",
+  "bridge_unconfigured",
+  "account_conflict",
   "unknown",
 ] as const;
 
@@ -18,6 +21,7 @@ export default async function LoginPage({
 }) {
   const { error } = await searchParams;
   const t = await getTranslations("auth");
+  const kaemnurUrl = process.env.NEXT_PUBLIC_KAEMNUR_URL ?? "https://kaemnur.com";
 
   const errorKey = KNOWN_ERRORS.includes(error as (typeof KNOWN_ERRORS)[number])
     ? (error as (typeof KNOWN_ERRORS)[number])
@@ -34,7 +38,7 @@ export default async function LoginPage({
             {t(`errors.${errorKey}`)}
           </div>
         )}
-        <LoginForm />
+        <LoginForm kaemnurUrl={kaemnurUrl} />
       </div>
     </main>
   );

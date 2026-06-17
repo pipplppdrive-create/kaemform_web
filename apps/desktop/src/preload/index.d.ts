@@ -2,7 +2,7 @@ import type { DesktopAPI } from "../shared/types";
 
 declare global {
   interface Window {
-    kaemform: DesktopAPI;
+    kaemform?: DesktopAPI;
   }
 }
 

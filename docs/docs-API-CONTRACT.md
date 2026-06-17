@@ -114,6 +114,8 @@ DELETE /api/templates/[id]                → delete personal template
 
 ```
 GET    /auth/callback?token=xxx           → validate launch token, create/update user, set session
+GET    /auth/callback?token=xxx&redirect_to=kaemform%3A%2F%2Fauth%2Fcallback
+                                            → desktop bridge: set session, then return access/refresh token to KaemForm Desktop
 GET    /auth/google                       → initiate Google OAuth
 GET    /auth/google/callback              → handle OAuth callback
 POST   /auth/logout                       → sign out

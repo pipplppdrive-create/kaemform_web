@@ -1,5 +1,6 @@
 import type { BrowserWindow } from "electron";
 import { createClient, type Session, type SupabaseClient } from "@supabase/supabase-js";
+import WebSocket from "ws";
 import type {
   DesktopUser,
   FormRecord,
@@ -18,10 +19,14 @@ import {
   setSetting,
 } from "./db";
 
-function getEnvironment(): { url: string; key: string } {
+function getEnvironment(): { url: string; key: string; kaemnurUrl: string } {
   return {
     url: import.meta.env.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL || "",
     key: import.meta.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || "",
+    kaemnurUrl:
+      import.meta.env.VITE_KAEMNUR_URL ||
+      process.env.VITE_KAEMNUR_URL ||
+      "https://kaemnur.com",
   };
 }
 
@@ -39,12 +44,13 @@ function toDesktopUser(session: Session, mode: "cloud" | "local" = "cloud"): Des
 
 export class SyncEngine {
   private client: SupabaseClient | null = null;
+  private environment = getEnvironment();
   private status: SyncStatus = { isSyncing: false, lastSynced: null, error: null };
   private window: BrowserWindow | null = null;
   private timer: NodeJS.Timeout | null = null;
 
   constructor() {
-    const env = getEnvironment();
+    const env = this.environment;
     if (env.url && env.key) {
       this.client = createClient(env.url, env.key, {
         auth: {
@@ -52,6 +58,10 @@ export class SyncEngine {
           autoRefreshToken: true,
           detectSessionInUrl: false,
           flowType: "implicit",
+        },
+        realtime: {
+          transport:
+            WebSocket as unknown as import("@supabase/realtime-js").WebSocketLikeConstructor,
         },
       });
     }
@@ -97,15 +107,30 @@ export class SyncEngine {
 
   async loginUrl(): Promise<string | null> {
     if (!this.client) return null;
-    const { data, error } = await this.client.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: "kaemform://auth/callback",
-        skipBrowserRedirect: true,
-      },
+    const baseUrl = this.environment.kaemnurUrl.replace(/\/$/, "");
+    return `${baseUrl}/api/products/kaemform/desktop-login`;
+  }
+
+  async loginWithPassword(email: string, password: string): Promise<DesktopUser> {
+    if (!this.client) {
+      throw new Error("Supabase belum dikonfigurasi.");
+    }
+
+    const { data, error } = await this.client.auth.signInWithPassword({
+      email: email.trim(),
+      password,
     });
-    if (error) throw error;
-    return data.url;
+    if (error || !data.session) {
+      throw new Error("Email atau kata sandi salah.");
+    }
+
+    setSetting("auth_session", JSON.stringify(data.session));
+    setSetting("refresh_token", data.session.refresh_token);
+    setSetting("local_user", "");
+    const user = toDesktopUser(data.session);
+    this.emitAuth(user);
+    void this.syncAll(false);
+    return user;
   }
 
   async handleCallback(callbackUrl: string): Promise<DesktopUser | null> {

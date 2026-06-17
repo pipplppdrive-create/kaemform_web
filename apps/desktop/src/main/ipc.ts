@@ -47,6 +47,9 @@ export function registerIpc(window: BrowserWindow, syncEngine: SyncEngine): void
     await shell.openExternal(url);
     return { configured: true };
   });
+  ipcMain.handle("auth:password", (_event, email: string, password: string) =>
+    syncEngine.loginWithPassword(email, password)
+  );
   ipcMain.handle("auth:local", () => syncEngine.loginLocal());
   ipcMain.handle("auth:logout", () => syncEngine.logout());
   ipcMain.handle("auth:get-session", () => syncEngine.restoreSession());

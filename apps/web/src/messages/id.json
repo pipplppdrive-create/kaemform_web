@@ -99,6 +99,9 @@
       "invalid_credentials": "Email atau kata sandi salah.",
       "email_in_use": "Email sudah digunakan.",
       "weak_password": "Kata sandi minimal 8 karakter.",
+      "provider_disabled": "Login Google dikelola lewat Kaemnur. Masuk dari kaemnur.com lalu buka KaemForm.",
+      "bridge_unconfigured": "Koneksi login Kaemnur belum dikonfigurasi. Hubungi administrator.",
+      "account_conflict": "Akun Kaemnur ini sudah terhubung ke akun KaemForm lain. Hubungi administrator.",
       "unknown": "Terjadi kesalahan saat masuk. Coba lagi."
     }
   },

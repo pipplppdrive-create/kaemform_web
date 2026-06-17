@@ -74,7 +74,7 @@ export function previewHtml(
     })
     .join("");
   return `<article class="document-preview">
-    <header><div class="mark">K</div><div><small>KAEMFORM DOCUMENT</small><h1>Pratinjau Dokumen</h1></div></header>
+    <header><img class="mark" src="./kaemform.png" alt="KaemForm" /><div><small>KAEMFORM DOCUMENT</small><h1>Pratinjau Dokumen</h1></div></header>
     <div class="line"></div><section>${fields}</section>
     <footer>Dihasilkan oleh KaemForm Desktop</footer>
   </article>`;

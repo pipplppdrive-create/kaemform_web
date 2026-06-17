@@ -4,6 +4,10 @@ Baca docs/API-CONTRACT.md untuk spesifikasi lengkap endpoint.
 
 Saya perlu menambahkan dua Edge Function dan satu integrasi UI di project Kaemnur (Next.js + Supabase) untuk mendukung produk baru KaemForm.
 
+Catatan implementasi saat ini: launch token juga tersedia dari route Vercel
+`POST /api/products/kaemform/launch` di `kaemnur-web`, sehingga tombol
+"Buka KaemForm" tidak harus memanggil `supabase.functions.invoke`.
+
 ## 1. Edge Function: generate-launch-token
 
 Lokasi: supabase/functions/generate-launch-token/index.ts
