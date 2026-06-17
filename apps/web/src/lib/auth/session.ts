@@ -31,9 +31,9 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   let cache = (row?.license_cache as LicenseCache | null | undefined) ?? null;
 
   if (!row) {
-    // First request after a direct email/password signup — the `users` row
+    // First request after a direct auth session: the `users` row
     // (separate from `auth.users`) doesn't exist yet, so provision it here
-    // with the standalone-phase default Pro cache.
+    // with the free fallback until Kaemnur provides the real license.
     cache = getDefaultLicenseCache();
     const { error: insertError } = await admin.from("users").insert({
       id: user.id,

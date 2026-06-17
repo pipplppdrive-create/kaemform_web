@@ -84,7 +84,10 @@ export async function POST(request: Request) {
   const fields = form.schema as FormField[];
   const data = parsed.data.data as ResponseData;
   const visibility = evaluateConditions(fields, data);
-  const errors = validateResponse(fields, data, visibility);
+  const visibleData = Object.fromEntries(
+    Object.entries(data).filter(([fieldId]) => visibility[fieldId] !== false)
+  ) as ResponseData;
+  const errors = validateResponse(fields, visibleData, visibility);
 
   if (Object.keys(errors).length > 0) {
     return NextResponse.json({ error: "validation_error", details: errors }, { status: 400 });
@@ -96,7 +99,7 @@ export async function POST(request: Request) {
   const { error: insertError } = await admin.from("responses").insert({
     form_id: form.id as string,
     respondent_id: respondentId,
-    data,
+    data: visibleData,
     metadata: { ip_hash: ipHash, user_agent: request.headers.get("user-agent") ?? undefined },
     expires_at: expiresAt,
   });

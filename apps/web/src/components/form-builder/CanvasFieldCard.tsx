@@ -9,6 +9,7 @@ import { FieldPreview, NO_LABEL_TYPES } from "./fields/FieldPreview";
 import { cn } from "@/lib/utils";
 
 export function CanvasFieldCard({ field }: { field: FormField }) {
+  const fields = useFormBuilderStore((s) => s.fields);
   const selectedFieldId = useFormBuilderStore((s) => s.selectedFieldId);
   const selectField = useFormBuilderStore((s) => s.selectField);
   const removeField = useFormBuilderStore((s) => s.removeField);
@@ -18,6 +19,11 @@ export function CanvasFieldCard({ field }: { field: FormField }) {
   });
 
   const selected = selectedFieldId === field.id;
+  const isSection = field.type === "section";
+  const sectionFields = fields.filter((item) => item.type === "section");
+  const sectionIndex = sectionFields.findIndex((item) => item.id === field.id);
+  const sectionMeta =
+    sectionIndex === -1 ? undefined : { index: sectionIndex + 1, total: sectionFields.length };
 
   return (
     <div
@@ -26,6 +32,7 @@ export function CanvasFieldCard({ field }: { field: FormField }) {
       onClick={() => selectField(field.id)}
       className={cn(
         "group relative cursor-pointer rounded-card border border-l-[3px] bg-white p-4 shadow-card transition-all duration-150 hover:-translate-y-px hover:shadow-card-hover sm:px-5",
+        isSection && "overflow-hidden border-primary-100 bg-white",
         selected
           ? "border-primary-200 border-l-primary-500 bg-primary-50/20"
           : "border-border border-l-transparent",
@@ -65,7 +72,7 @@ export function CanvasFieldCard({ field }: { field: FormField }) {
         </div>
       )}
 
-      <FieldPreview field={field} />
+      <FieldPreview field={field} sectionMeta={sectionMeta} />
     </div>
   );
 }

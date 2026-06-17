@@ -4,6 +4,7 @@ import type { FieldType, FormField } from "@kaemform/shared";
 
 interface FieldPreviewProps {
   field: FormField;
+  sectionMeta?: { index: number; total: number };
 }
 
 function TextPreview({ field, type }: { field: FormField; type: string }) {
@@ -71,11 +72,20 @@ function SignaturePreview() {
   );
 }
 
-function SectionPreview({ field }: FieldPreviewProps) {
+function SectionPreview({ field, sectionMeta }: FieldPreviewProps) {
+  const t = useTranslations("builder.canvas");
+
   return (
-    <div className="border-b border-border pb-2">
-      <h3 className="text-base font-semibold text-gray-900">{field.label}</h3>
-      {field.description && <p className="mt-1 text-sm text-gray-500">{field.description}</p>}
+    <div>
+      {sectionMeta && (
+        <div className="-mx-5 -mt-4 mb-4 sm:-mx-5">
+          <span className="inline-flex rounded-br-input bg-primary-600 px-3 py-1.5 text-xs font-bold text-white">
+            {t("sectionCount", { current: sectionMeta.index, total: sectionMeta.total })}
+          </span>
+        </div>
+      )}
+      <h3 className="text-lg font-bold text-slate-900">{field.label}</h3>
+      {field.description && <p className="mt-2 text-sm leading-6 text-slate-500">{field.description}</p>}
     </div>
   );
 }

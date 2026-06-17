@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { getTranslations } from "next-intl/server";
-import { LoginForm } from "@/components/auth/LoginForm";
+import { ArrowRight, UserPlus } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
+import { KaemnurAttribution } from "@/components/shared/KaemnurAttribution";
 
 const KNOWN_ERRORS = [
   "invalid_token",
@@ -32,12 +34,41 @@ export default async function LoginPage({
         <div className="mb-7 flex justify-center">
           <BrandLogo />
         </div>
+        <div className="-mt-3 mb-7 flex justify-center">
+          <KaemnurAttribution className="bg-slate-50 px-3 py-1.5 ring-1 ring-slate-100" />
+        </div>
         {errorKey && (
           <div className="mb-5 rounded-input border border-error/30 bg-red-50 p-3 text-sm font-medium text-error">
             {t(`errors.${errorKey}`)}
           </div>
         )}
-        <LoginForm />
+        <div className="flex flex-col gap-6">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+              {t("loginTitle")}
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-slate-500">{t("loginSubtitle")}</p>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <Link
+              href="/auth/kaemnur"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-input bg-primary-600 px-6 text-base font-semibold text-white shadow-button transition-all duration-150 ease-out hover:-translate-y-px hover:bg-primary-700 hover:shadow-lg"
+            >
+              {t("loginWithKaemnur")}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href="/auth/kaemnur?mode=register"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-input border border-primary-200 bg-white px-6 text-base font-semibold text-primary-700 shadow-sm transition-all duration-150 ease-out hover:-translate-y-px hover:border-primary-300 hover:bg-primary-50"
+            >
+              <UserPlus className="h-4 w-4" />
+              {t("registerWithKaemnur")}
+            </Link>
+          </div>
+
+          <p className="text-center text-xs leading-5 text-slate-500">{t("kaemnurInfo")}</p>
+        </div>
       </div>
     </main>
   );

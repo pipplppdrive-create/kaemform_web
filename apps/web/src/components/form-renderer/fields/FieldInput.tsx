@@ -1,3 +1,4 @@
+import { useTranslations } from "next-intl";
 import { Input, Textarea } from "@/components/ui";
 import { SignatureCanvas } from "@/components/shared/SignatureCanvas";
 import { cn } from "@/lib/utils";
@@ -8,6 +9,7 @@ export interface FieldInputProps {
   value: ResponseFieldValue;
   onChange: (value: ResponseFieldValue) => void;
   error?: string;
+  sectionMeta?: { index: number; total: number };
 }
 
 function TextInput({ field, value, onChange, error, type }: FieldInputProps & { type: string }) {
@@ -175,11 +177,20 @@ function SignatureInput({ value, onChange, error }: FieldInputProps) {
   );
 }
 
-function SectionDisplay({ field }: FieldInputProps) {
+function SectionDisplay({ field, sectionMeta }: FieldInputProps) {
+  const t = useTranslations("builder.canvas");
+
   return (
-    <div className="border-b border-primary-100 pb-3">
-      <h3 className="text-lg font-bold text-slate-900">{field.label}</h3>
-      {field.description && <p className="mt-1 text-sm leading-6 text-slate-500">{field.description}</p>}
+    <div className="overflow-hidden rounded-card border border-primary-100 bg-primary-50/35">
+      {sectionMeta && (
+        <div className="inline-flex rounded-br-input bg-primary-600 px-3 py-1.5 text-xs font-bold text-white">
+          {t("sectionCount", { current: sectionMeta.index, total: sectionMeta.total })}
+        </div>
+      )}
+      <div className="px-4 pb-4 pt-3">
+        <h3 className="text-lg font-bold text-slate-900">{field.label}</h3>
+        {field.description && <p className="mt-1 text-sm leading-6 text-slate-500">{field.description}</p>}
+      </div>
     </div>
   );
 }

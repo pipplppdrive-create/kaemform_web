@@ -18,8 +18,8 @@
     "plugins": [{ "name": "next" }],
     "paths": {
       "@/*": ["./src/*"],
-      "@kaemform/shared": ["../../packages/shared/src/index.ts"],
-      "@kaemform/shared/*": ["../../packages/shared/src/*"]
+      "@kaemform/shared": ["./src/lib/shared/index.ts"],
+      "@kaemform/shared/*": ["./src/lib/shared/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

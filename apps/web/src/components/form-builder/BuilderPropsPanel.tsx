@@ -1,26 +1,81 @@
 "use client";
 
+import type { ClipboardEvent } from "react";
 import { useTranslations } from "next-intl";
 import { nanoid } from "nanoid";
 import { MousePointerClick, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
-import type { ConditionAction, ConditionOperator, FieldOption, FormField } from "@kaemform/shared";
+import type { ConditionAction, ConditionOperator, FieldOption, FormField, FormSettings } from "@kaemform/shared";
 import { Badge, Input, Textarea, Switch, Button } from "@/components/ui";
 import { useFormBuilderStore } from "@/stores/formBuilderStore";
 
 const CHOICE_TYPES: FormField["type"][] = ["single_choice", "multiple_choice", "dropdown"];
 const NON_REFERENCEABLE_TYPES: FormField["type"][] = ["section", "paragraph", "signature"];
 const CONDITION_OPERATORS: ConditionOperator[] = ["equals", "not_equals", "contains", "is_empty", "is_not_empty"];
+const DEFAULT_OPTION_LABEL_PATTERN = /^(opsi|option)\s+\d+$/i;
 
 function toNumberOrUndefined(value: string): number | undefined {
   return value === "" ? undefined : Number(value);
+}
+
+function isChoiceField(field: FormField | undefined): boolean {
+  return !!field && CHOICE_TYPES.includes(field.type);
 }
 
 function OptionsEditor({ field, onChange }: { field: FormField; onChange: (options: FieldOption[]) => void }) {
   const t = useTranslations("builder.props");
   const options = field.options ?? [];
 
+  const createOption = (label: string, id = nanoid(6)): FieldOption => ({
+    id,
+    label,
+    value: label,
+  });
+
+  const isDisposableOption = (option: FieldOption, index: number) => {
+    const label = option.label.trim();
+    return !label || label === t("optionLabel", { n: index + 1 }) || DEFAULT_OPTION_LABEL_PATTERN.test(label);
+  };
+
+  const splitPastedOptions = (value: string) =>
+    value
+      .split(/[,\r\n]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+
   const updateOption = (id: string, label: string) => {
     onChange(options.map((o) => (o.id === id ? { ...o, label, value: label } : o)));
+  };
+
+  const pasteOptions = (id: string, value: string) => {
+    const labels = splitPastedOptions(value);
+    if (labels.length <= 1) return false;
+
+    const targetIndex = options.findIndex((option) => option.id === id);
+    if (targetIndex < 0) return false;
+
+    let nextIndex = targetIndex + 1;
+    const pastedOptions = labels.map((label, labelIndex) => {
+      if (labelIndex === 0) {
+        return createOption(label, id);
+      }
+
+      const reusable = options[nextIndex];
+      if (reusable && isDisposableOption(reusable, nextIndex)) {
+        nextIndex += 1;
+        return createOption(label, reusable.id);
+      }
+
+      return createOption(label);
+    });
+
+    onChange([...options.slice(0, targetIndex), ...pastedOptions, ...options.slice(nextIndex)]);
+    return true;
+  };
+
+  const handlePaste = (event: ClipboardEvent<HTMLInputElement>, id: string) => {
+    if (pasteOptions(id, event.clipboardData.getData("text"))) {
+      event.preventDefault();
+    }
   };
 
   const removeOption = (id: string) => {
@@ -37,7 +92,12 @@ function OptionsEditor({ field, onChange }: { field: FormField; onChange: (optio
       <label className="text-sm font-medium text-gray-700">{t("options")}</label>
       {options.map((option) => (
         <div key={option.id} className="flex items-center gap-2">
-          <Input value={option.label} onChange={(e) => updateOption(option.id, e.target.value)} className="flex-1" />
+          <Input
+            value={option.label}
+            onChange={(e) => updateOption(option.id, e.target.value)}
+            onPaste={(e) => handlePaste(e, option.id)}
+            className="flex-1"
+          />
           <button
             type="button"
             onClick={() => removeOption(option.id)}
@@ -77,6 +137,14 @@ function ConditionsEditor({
   const referenceable = fields.filter(
     (f) => f.order < field.order && !NON_REFERENCEABLE_TYPES.includes(f.type)
   );
+  const referenceField = condition ? referenceable.find((f) => f.id === condition.field_id) : undefined;
+  const referenceOptions = referenceField?.options ?? [];
+  const needsConditionValue =
+    condition?.operator !== "is_empty" && condition?.operator !== "is_not_empty";
+
+  const getDefaultConditionValue = (targetField: FormField | undefined) => {
+    return targetField?.options?.[0]?.value ?? "";
+  };
 
   const toggle = (enabled: boolean) => {
     if (!enabled) {
@@ -84,12 +152,30 @@ function ConditionsEditor({
       return;
     }
     const first = referenceable[0];
-    onChange(first ? [{ field_id: first.id, operator: "equals", value: "", action: "show" }] : []);
+    onChange(first ? [{ field_id: first.id, operator: "equals", value: getDefaultConditionValue(first), action: "show" }] : []);
   };
 
   const update = (partial: Partial<NonNullable<FormField["conditions"]>[number]>) => {
     if (!condition) return;
     onChange([{ ...condition, ...partial }]);
+  };
+
+  const updateReferenceField = (fieldId: string) => {
+    const nextField = referenceable.find((item) => item.id === fieldId);
+    update({
+      field_id: fieldId,
+      value: needsConditionValue ? getDefaultConditionValue(nextField) : condition?.value,
+    });
+  };
+
+  const updateOperator = (operator: ConditionOperator) => {
+    update({
+      operator,
+      value:
+        operator === "is_empty" || operator === "is_not_empty"
+          ? ""
+          : condition?.value || getDefaultConditionValue(referenceField),
+    });
   };
 
   return (
@@ -125,7 +211,7 @@ function ConditionsEditor({
             <label className="text-xs text-gray-500">{t("ifField")}</label>
             <select
               value={condition.field_id}
-              onChange={(e) => update({ field_id: e.target.value })}
+              onChange={(e) => updateReferenceField(e.target.value)}
               className="mt-1 h-9 w-full rounded-input border border-border bg-white px-2 text-sm text-gray-900"
             >
               {referenceable.map((f) => (
@@ -140,7 +226,7 @@ function ConditionsEditor({
             <label className="text-xs text-gray-500">{t("operator")}</label>
             <select
               value={condition.operator}
-              onChange={(e) => update({ operator: e.target.value as ConditionOperator })}
+              onChange={(e) => updateOperator(e.target.value as ConditionOperator)}
               className="mt-1 h-9 w-full rounded-input border border-border bg-white px-2 text-sm text-gray-900"
             >
               {CONDITION_OPERATORS.map((op) => (
@@ -151,8 +237,25 @@ function ConditionsEditor({
             </select>
           </div>
 
-          {condition.operator !== "is_empty" && condition.operator !== "is_not_empty" && (
-            <Input label={t("value")} value={condition.value ?? ""} onChange={(e) => update({ value: e.target.value })} />
+          {needsConditionValue && (
+            isChoiceField(referenceField) && referenceOptions.length > 0 ? (
+              <div>
+                <label className="text-xs text-gray-500">{t("value")}</label>
+                <select
+                  value={condition.value ?? ""}
+                  onChange={(e) => update({ value: e.target.value })}
+                  className="mt-1 h-9 w-full rounded-input border border-border bg-white px-2 text-sm text-gray-900"
+                >
+                  {referenceOptions.map((option) => (
+                    <option key={option.id} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <Input label={t("value")} value={condition.value ?? ""} onChange={(e) => update({ value: e.target.value })} />
+            )
           )}
 
           <div>
@@ -175,9 +278,13 @@ function ConditionsEditor({
 export function BuilderPropsPanelContent({
   canUseConditionalLogic,
   onLockedClick,
+  sectionMode = "single",
+  onSectionModeChange,
 }: {
   canUseConditionalLogic: boolean;
   onLockedClick: () => void;
+  sectionMode?: FormSettings["section_mode"];
+  onSectionModeChange?: (mode: FormSettings["section_mode"]) => void;
 }) {
   const t = useTranslations();
   const fields = useFormBuilderStore((s) => s.fields);
@@ -222,6 +329,33 @@ export function BuilderPropsPanelContent({
               value={field.description ?? ""}
               onChange={(e) => updateField(field.id, { description: e.target.value })}
             />
+          )}
+
+          {field.type === "section" && onSectionModeChange && (
+            <div>
+              <label className="mb-1.5 block text-[13px] font-semibold text-slate-700">
+                {t("builder.props.sectionMode")}
+              </label>
+              <div className="grid grid-cols-2 rounded-input bg-slate-100 p-1">
+                {(["single", "paged"] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => onSectionModeChange(mode)}
+                    className={`h-9 rounded-input text-xs font-semibold transition ${
+                      sectionMode === mode
+                        ? "bg-white text-primary-700 shadow-sm"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    {t(`builder.props.sectionModes.${mode}`)}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1.5 text-xs leading-5 text-slate-500">
+                {t(`builder.props.sectionModeHints.${sectionMode}`)}
+              </p>
+            </div>
           )}
 
           {field.type !== "section" && field.type !== "paragraph" && (
@@ -341,13 +475,22 @@ export function BuilderPropsPanelContent({
 export function BuilderPropsPanel({
   canUseConditionalLogic,
   onLockedClick,
+  sectionMode,
+  onSectionModeChange,
 }: {
   canUseConditionalLogic: boolean;
   onLockedClick: () => void;
+  sectionMode?: FormSettings["section_mode"];
+  onSectionModeChange?: (mode: FormSettings["section_mode"]) => void;
 }) {
   return (
     <aside className="hidden w-[280px] shrink-0 overflow-y-auto border-l border-border bg-white xl:block">
-      <BuilderPropsPanelContent canUseConditionalLogic={canUseConditionalLogic} onLockedClick={onLockedClick} />
+      <BuilderPropsPanelContent
+        canUseConditionalLogic={canUseConditionalLogic}
+        onLockedClick={onLockedClick}
+        sectionMode={sectionMode}
+        onSectionModeChange={onSectionModeChange}
+      />
     </aside>
   );
 }

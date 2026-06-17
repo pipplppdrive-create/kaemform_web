@@ -75,7 +75,7 @@
   },
   "auth": {
     "loginTitle": "Sign in to KaemForm",
-    "loginSubtitle": "Use a manual account while KaemForm runs standalone on Vercel.",
+    "loginSubtitle": "Sign in or register through Kaemnur.com so your KaemForm license follows your account.",
     "continueWithGoogle": "Continue with Google",
     "loginWithEmail": "Sign in with Email",
     "loginMode": "Sign in",
@@ -87,16 +87,24 @@
     "emailPlaceholder": "name@email.com",
     "passwordPlaceholder": "At least 8 characters",
     "loginButton": "Sign in",
+    "loginWithKaemnur": "Sign in with Kaemnur",
+    "registerWithKaemnur": "Register on Kaemnur",
+    "adminLoginTitle": "KaemForm Admin",
+    "adminLoginSubtitle": "Hidden manual access for the Kaemnur build.",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Admin username",
+    "adminLoginButton": "Sign in as Admin",
     "registerButton": "Sign up",
     "registerTitle": "Create a KaemForm account",
-    "registerSubtitle": "Manual account for the standalone phase.",
+    "registerSubtitle": "Register through Kaemnur to activate your license.",
     "signupSuccess": "Account created. If email verification is enabled, open the inbox link first, then sign in.",
     "noAccount": "Don't have an account?",
     "haveAccount": "Already have an account?",
     "createAccount": "Create account",
-    "fromKaemnur": "Manual sign in",
-    "kaemnurInfo": "Standalone mode: manual accounts are not connected to external services.",
-    "manualInfo": "Standalone mode: manual login uses the KaemForm Supabase project without connecting to external services.",
+    "fromKaemnur": "Sign in from Kaemnur",
+    "kaemnurInfo": "License and Pro status are synced from the Kaemnur account.",
+    "manualInfo": "Manual sign in is only available through the private admin page.",
+    "adminManualInfo": "This account receives local Pro access for administration.",
     "or": "or",
     "logoutConfirm": "Are you sure you want to log out?",
     "errors": {
@@ -105,8 +113,8 @@
       "invalid_credentials": "Incorrect email or password.",
       "email_in_use": "Email is already in use.",
       "weak_password": "Password must be at least 8 characters.",
-      "provider_disabled": "Google login is disabled for now. Use manual sign in.",
-      "bridge_unconfigured": "External login is not configured. Use manual sign in.",
+      "provider_disabled": "Direct Google login is disabled. Sign in through Kaemnur.com.",
+      "bridge_unconfigured": "Kaemnur login is not configured yet. Contact the administrator.",
       "account_conflict": "This account is already connected to another KaemForm account. Contact the administrator.",
       "unknown": "Something went wrong while signing in. Please try again."
     }
@@ -224,7 +232,9 @@
     },
     "canvas": {
       "empty": "Drag a field from the left panel",
-      "addField": "+ Add Field"
+      "addField": "+ Add Field",
+      "addSection": "+ Add Section",
+      "sectionCount": "Section {current} of {total}"
     },
     "props": {
       "title": "Properties",
@@ -244,6 +254,15 @@
       "scaleMinLabel": "Start Label",
       "scaleMaxLabel": "End Label",
       "content": "Content",
+      "sectionMode": "Section Display",
+      "sectionModes": {
+        "single": "One page",
+        "paged": "Separate pages"
+      },
+      "sectionModeHints": {
+        "single": "All sections appear sequentially on one page.",
+        "paged": "Each section becomes a separate page with next/back navigation."
+      },
       "conditions": {
         "title": "Conditions",
         "toggle": "Show with condition",
@@ -284,6 +303,7 @@
   "publicForm": {
     "submit": "Submit",
     "submitting": "Submitting...",
+    "goToSection": "Go to section {n}",
     "poweredBy": "Made with KaemForm",
     "notFound": "Form not found.",
     "closedTitle": "Form Closed",
@@ -363,6 +383,15 @@
     "oneResponsePerIpLabel": "One response per IP address",
     "requireLoginLabel": "Require login to fill out the form",
     "showProgressBarLabel": "Show progress bar",
+    "sectionModeLabel": "Section Display",
+    "sectionModes": {
+      "single": "One page",
+      "paged": "Separate pages"
+    },
+    "sectionModeHints": {
+      "single": "All sections appear sequentially on one form page.",
+      "paged": "Sections appear as step-by-step pages with next and back navigation."
+    },
     "retentionInfo": "Responses for this form are stored for {days} days before being automatically deleted.",
     "extendRetention": "Extend Storage",
     "primaryColorLabel": "Primary Color",
@@ -395,7 +424,7 @@
     "refreshLicense": "Refresh License",
     "refreshSuccess": "License refreshed successfully",
     "refreshNoChange": "No changes to your license",
-    "licenseStandaloneNote": "Standalone mode uses a local default license. External license sync can be enabled later.",
+    "licenseStandaloneNote": "Your license is synced from Kaemnur. Refresh it after buying or extending a license.",
     "languageTitle": "Language",
     "languageNote": "Only Indonesian is available for now."
   },
@@ -409,7 +438,7 @@
     "modalTitle": "Pro Feature",
     "modalDescription": "This feature requires a Pro license.",
     "price": "Upgrade: Rp 99,000/year",
-    "standaloneNote": "Upgrade and billing are not connected in standalone mode. For now, new accounts receive a local default license.",
+    "standaloneNote": "Upgrade and billing are managed in Kaemnur. Sign in again or refresh your license after purchase.",
     "cta": "Upgrade to Pro",
     "trialCta": "Try free for 14 days",
     "trialBanner": "Trial — {days} days left",

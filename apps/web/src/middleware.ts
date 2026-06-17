@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
   const isAppRoute = pathname.startsWith("/app");
-  const isLoginRoute = pathname === "/login";
+  const isLoginRoute = pathname === "/login" || pathname === "/admin";
 
   if (isAppRoute && !user) {
     const url = request.nextUrl.clone();

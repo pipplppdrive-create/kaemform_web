@@ -29,16 +29,26 @@ export function evaluateConditions(
   data: ResponseData
 ): Record<string, boolean> {
   const visibility: Record<string, boolean> = {};
+  let currentSectionVisible = true;
 
-  for (const field of fields) {
+  for (const field of [...fields].sort((a, b) => a.order - b.order)) {
     const condition = field.conditions?.[0];
     if (!condition) {
-      visibility[field.id] = true;
+      visibility[field.id] = field.type === "section" ? true : currentSectionVisible;
+      if (field.type === "section") currentSectionVisible = true;
+      continue;
+    }
+
+    if (visibility[condition.field_id] === false) {
+      visibility[field.id] = false;
+      if (field.type === "section") currentSectionVisible = false;
       continue;
     }
 
     const matches = matchesCondition(data[condition.field_id] ?? null, condition);
-    visibility[field.id] = condition.action === "show" ? matches : !matches;
+    const conditionVisible = condition.action === "show" ? matches : !matches;
+    visibility[field.id] = field.type === "section" ? conditionVisible : currentSectionVisible && conditionVisible;
+    if (field.type === "section") currentSectionVisible = conditionVisible;
   }
 
   return visibility;

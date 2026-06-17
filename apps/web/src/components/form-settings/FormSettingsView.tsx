@@ -60,7 +60,10 @@ export function FormSettingsView({
   const [slug, setSlug] = useState(form.slug);
   const [slugError, setSlugError] = useState<string | null>(null);
   const [status, setStatus] = useState<FormStatus>(form.status);
-  const [settings, setSettings] = useState<FormSettings>(form.settings);
+  const [settings, setSettings] = useState<FormSettings>({
+    ...form.settings,
+    section_mode: form.settings.section_mode ?? "single",
+  });
   const [emailsInput, setEmailsInput] = useState(settings.notification_emails.join(", "));
   const [redirectUrlInput, setRedirectUrlInput] = useState(settings.redirect_url ?? "");
   const [copied, setCopied] = useState(false);
@@ -343,6 +346,30 @@ export function FormSettingsView({
               checked={settings.show_progress_bar}
               onCheckedChange={(checked) => updateSettings({ show_progress_bar: checked })}
             />
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-gray-700">
+                {t("formSettings.sectionModeLabel")}
+              </label>
+              <div className="grid grid-cols-2 rounded-input bg-slate-100 p-1">
+                {(["single", "paged"] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    type="button"
+                    onClick={() => updateSettings({ section_mode: mode })}
+                    className={`h-9 rounded-input text-sm font-semibold transition ${
+                      settings.section_mode === mode
+                        ? "bg-white text-primary-700 shadow-sm"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    {t(`formSettings.sectionModes.${mode}`)}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1.5 text-xs leading-5 text-slate-500">
+                {t(`formSettings.sectionModeHints.${settings.section_mode}`)}
+              </p>
+            </div>
           </CardContent>
         </Card>
 

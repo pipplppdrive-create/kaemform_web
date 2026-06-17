@@ -75,7 +75,7 @@
   },
   "auth": {
     "loginTitle": "Masuk ke KaemForm",
-    "loginSubtitle": "Gunakan akun manual untuk menjalankan KaemForm standalone di Vercel.",
+    "loginSubtitle": "Masuk atau daftar melalui Kaemnur.com agar lisensi KaemForm mengikuti akun Anda.",
     "continueWithGoogle": "Masuk dengan Google",
     "loginWithEmail": "Masuk dengan Email",
     "loginMode": "Masuk",
@@ -87,16 +87,24 @@
     "emailPlaceholder": "nama@email.com",
     "passwordPlaceholder": "Minimal 8 karakter",
     "loginButton": "Masuk",
+    "loginWithKaemnur": "Masuk lewat Kaemnur",
+    "registerWithKaemnur": "Daftar di Kaemnur",
+    "adminLoginTitle": "Admin KaemForm",
+    "adminLoginSubtitle": "Akses manual tersembunyi untuk versi Kaemnur.",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Username admin",
+    "adminLoginButton": "Masuk Admin",
     "registerButton": "Daftar",
     "registerTitle": "Buat akun KaemForm",
-    "registerSubtitle": "Akun manual untuk fase standalone.",
+    "registerSubtitle": "Daftar melalui Kaemnur untuk mengaktifkan lisensi.",
     "signupSuccess": "Akun dibuat. Jika verifikasi email aktif, buka tautan di inbox lebih dulu, lalu masuk.",
     "noAccount": "Belum punya akun?",
     "haveAccount": "Sudah punya akun?",
     "createAccount": "Buat akun",
-    "fromKaemnur": "Masuk manual",
-    "kaemnurInfo": "Mode standalone: akun manual tidak terhubung ke layanan eksternal.",
-    "manualInfo": "Mode standalone: login manual memakai Supabase project KaemForm, tanpa koneksi ke layanan eksternal.",
+    "fromKaemnur": "Masuk dari Kaemnur",
+    "kaemnurInfo": "Lisensi dan status Pro disinkronkan dari akun Kaemnur.",
+    "manualInfo": "Login manual hanya tersedia melalui halaman admin khusus.",
+    "adminManualInfo": "Akun ini diberi akses Pro lokal untuk kebutuhan administrasi.",
     "or": "atau",
     "logoutConfirm": "Apakah Anda yakin ingin keluar?",
     "errors": {
@@ -105,8 +113,8 @@
       "invalid_credentials": "Email atau kata sandi salah.",
       "email_in_use": "Email sudah digunakan.",
       "weak_password": "Kata sandi minimal 8 karakter.",
-      "provider_disabled": "Login Google sedang dinonaktifkan. Gunakan login manual.",
-      "bridge_unconfigured": "Koneksi login eksternal belum dikonfigurasi. Gunakan login manual.",
+      "provider_disabled": "Login Google langsung dinonaktifkan. Masuk melalui Kaemnur.com.",
+      "bridge_unconfigured": "Koneksi login Kaemnur belum dikonfigurasi. Hubungi admin.",
       "account_conflict": "Akun ini sudah terhubung ke akun KaemForm lain. Hubungi administrator.",
       "unknown": "Terjadi kesalahan saat masuk. Coba lagi."
     }
@@ -224,7 +232,9 @@
     },
     "canvas": {
       "empty": "Drag field dari panel kiri",
-      "addField": "+ Tambah Field"
+      "addField": "+ Tambah Field",
+      "addSection": "+ Tambah Bagian",
+      "sectionCount": "Bagian {current} dari {total}"
     },
     "props": {
       "title": "Properti",
@@ -244,6 +254,15 @@
       "scaleMinLabel": "Label Awal",
       "scaleMaxLabel": "Label Akhir",
       "content": "Konten",
+      "sectionMode": "Tampilan Bagian",
+      "sectionModes": {
+        "single": "Gabung 1 halaman",
+        "paged": "Terpisah halaman"
+      },
+      "sectionModeHints": {
+        "single": "Semua bagian tampil berurutan di satu halaman.",
+        "paged": "Setiap bagian menjadi halaman terpisah dengan tombol lanjut/kembali."
+      },
       "conditions": {
         "title": "Kondisi",
         "toggle": "Tampilkan dengan kondisi",
@@ -284,6 +303,7 @@
   "publicForm": {
     "submit": "Kirim",
     "submitting": "Mengirim...",
+    "goToSection": "Buka bagian {n}",
     "poweredBy": "Dibuat dengan KaemForm",
     "notFound": "Formulir tidak ditemukan.",
     "closedTitle": "Formulir Ditutup",
@@ -363,6 +383,15 @@
     "oneResponsePerIpLabel": "Satu respons per alamat IP",
     "requireLoginLabel": "Wajib login untuk mengisi formulir",
     "showProgressBarLabel": "Tampilkan progress bar",
+    "sectionModeLabel": "Tampilan Bagian",
+    "sectionModes": {
+      "single": "Gabung 1 halaman",
+      "paged": "Terpisah halaman"
+    },
+    "sectionModeHints": {
+      "single": "Semua bagian tampil berurutan dalam satu halaman form.",
+      "paged": "Bagian akan ditampilkan sebagai halaman bertahap dengan tombol lanjut dan kembali."
+    },
     "retentionInfo": "Respons formulir ini disimpan selama {days} hari sebelum dihapus otomatis.",
     "extendRetention": "Perpanjang Penyimpanan",
     "primaryColorLabel": "Warna Utama",
@@ -395,13 +424,13 @@
     "refreshLicense": "Refresh Lisensi",
     "refreshSuccess": "Lisensi berhasil diperbarui",
     "refreshNoChange": "Tidak ada perubahan pada lisensi Anda",
-    "licenseStandaloneNote": "Mode standalone memakai lisensi default lokal. Sinkronisasi lisensi eksternal dapat diaktifkan nanti.",
+    "licenseStandaloneNote": "Lisensi disinkronkan dari akun Kaemnur. Gunakan refresh jika baru membeli atau memperpanjang lisensi.",
     "languageTitle": "Bahasa",
     "languageNote": "Saat ini hanya Bahasa Indonesia yang tersedia."
   },
   "landing": {
     "heroTitle": "Buat formulir online dengan mudah",
-    "heroSubtitle": "KaemForm — form builder Indonesia untuk absensi, registrasi event, survei, dan lebih banyak lagi.",
+    "heroSubtitle": "KaemForm, platform formulir online untuk absensi, registrasi, survei, dan lainnya.",
     "ctaLogin": "Masuk ke Dashboard",
     "ctaKaemnur": "Pelajari KaemForm"
   },
@@ -409,7 +438,7 @@
     "modalTitle": "Fitur Pro",
     "modalDescription": "Fitur ini memerlukan lisensi Pro.",
     "price": "Upgrade: Rp 99.000/tahun",
-    "standaloneNote": "Upgrade dan billing belum dihubungkan di mode standalone. Untuk sementara, akun baru mendapat lisensi default lokal.",
+    "standaloneNote": "Upgrade dan billing dikelola di Kaemnur. Masuk ulang atau refresh lisensi setelah pembelian.",
     "cta": "Upgrade ke Pro",
     "trialCta": "Coba gratis 14 hari",
     "trialBanner": "Trial — sisa {days} hari",

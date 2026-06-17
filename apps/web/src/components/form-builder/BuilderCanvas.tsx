@@ -3,7 +3,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { useTranslations } from "next-intl";
-import { Plus } from "lucide-react";
+import { Heading, Plus } from "lucide-react";
 import { useFormBuilderStore } from "@/stores/formBuilderStore";
 import { CanvasFieldCard } from "./CanvasFieldCard";
 import { Button } from "@/components/ui";
@@ -32,15 +32,26 @@ export function BuilderCanvas() {
           </SortableContext>
         )}
 
-        <Button
-          type="button"
-          variant="ghost"
-          className="border-2 border-dashed border-slate-200 bg-transparent text-slate-500 shadow-none hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
-          onClick={() => addField("short_text")}
-        >
-          <Plus className="h-4 w-4" />
-          {t("addField")}
-        </Button>
+        <div className="grid gap-2 sm:grid-cols-2">
+          <Button
+            type="button"
+            variant="ghost"
+            className="border-2 border-dashed border-slate-200 bg-transparent text-slate-500 shadow-none hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700"
+            onClick={() => addField("short_text")}
+          >
+            <Plus className="h-4 w-4" />
+            {t("addField")}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="border-2 border-dashed border-primary-200 bg-primary-50/40 text-primary-700 shadow-none hover:border-primary-400 hover:bg-primary-50"
+            onClick={() => addField("section")}
+          >
+            <Heading className="h-4 w-4" />
+            {t("addSection")}
+          </Button>
+        </div>
       </div>
     </div>
   );

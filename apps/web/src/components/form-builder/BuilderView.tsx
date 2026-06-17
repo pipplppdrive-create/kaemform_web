@@ -15,7 +15,7 @@ import {
 import * as LucideIcons from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { Plus, SlidersHorizontal } from "lucide-react";
-import { FIELD_TYPES, type FieldType, type Form } from "@kaemform/shared";
+import { FIELD_TYPES, type FieldType, type Form, type FormSettings } from "@kaemform/shared";
 import { Button, Modal } from "@/components/ui";
 import { useToast } from "@/stores/toastStore";
 import { useFormBuilderStore } from "@/stores/formBuilderStore";
@@ -58,6 +58,10 @@ export function BuilderView({
 
   const [status, setStatus] = useState(form.status);
   const [title, setTitle] = useState(form.title);
+  const [formSettings, setFormSettings] = useState<FormSettings>({
+    ...form.settings,
+    section_mode: form.settings.section_mode ?? "single",
+  });
   const [previewMode, setPreviewMode] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const [closeOpen, setCloseOpen] = useState(false);
@@ -104,6 +108,20 @@ export function BuilderView({
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fields, isDirty]);
+
+  const updateFormSettings = (patch: Partial<FormSettings>) => {
+    setFormSettings((prev) => {
+      const next = { ...prev, ...patch };
+      void fetch(`/api/forms/${form.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ settings: next }),
+      }).catch(() => {
+        toast({ title: t("builder.saveError"), variant: "error" });
+      });
+      return next;
+    });
+  };
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
@@ -207,7 +225,7 @@ export function BuilderView({
 
       {previewMode ? (
         <div className="flex-1 overflow-y-auto bg-slate-50">
-          <FormRenderer form={{ ...form, title, schema: fields }} preview />
+          <FormRenderer form={{ ...form, title, schema: fields, settings: formSettings }} preview />
         </div>
       ) : (
         <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
@@ -217,6 +235,8 @@ export function BuilderView({
             <BuilderPropsPanel
               canUseConditionalLogic={canUseConditionalLogic}
               onLockedClick={() => setUpgradeOpen(true)}
+              sectionMode={formSettings.section_mode ?? "single"}
+              onSectionModeChange={(sectionMode) => updateFormSettings({ section_mode: sectionMode })}
             />
           </div>
           <DragOverlay>
@@ -274,6 +294,8 @@ export function BuilderView({
             setPropsSheetOpen(false);
             setUpgradeOpen(true);
           }}
+          sectionMode={formSettings.section_mode ?? "single"}
+          onSectionModeChange={(sectionMode) => updateFormSettings({ section_mode: sectionMode })}
         />
       </Modal>
 

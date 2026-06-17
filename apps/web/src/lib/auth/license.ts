@@ -1,11 +1,21 @@
 import { TIER_LIMITS, TRIAL_DURATION_DAYS, type LicenseCache } from "@kaemform/shared";
 
 /**
- * Default license used for the standalone/manual-login phase (no Kaemnur
- * bridge configured yet). New users get full Pro access so the admin can
- * use every feature while the app is validated.
+ * Default cache for normal users when no Kaemnur payload exists yet. Real
+ * user licenses should arrive from Kaemnur and replace this cache at login.
  */
 export function getDefaultLicenseCache(): LicenseCache {
+  return {
+    type: "free",
+    expires_at: null,
+    trial_started_at: null,
+    storage_addon: null,
+    limits: TIER_LIMITS.free,
+  };
+}
+
+/** Local-only Pro cache for the hidden manual admin fallback. */
+export function getManualAdminLicenseCache(): LicenseCache {
   return {
     type: "pro",
     expires_at: null,

@@ -6,6 +6,7 @@ import { Settings, LogOut, ChevronDown } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useLicense } from "@/hooks/useLicense";
 import { BrandLogo } from "@/components/shared/BrandLogo";
+import { KaemnurAttribution } from "@/components/shared/KaemnurAttribution";
 import {
   Badge,
   DropdownMenu,
@@ -32,9 +33,13 @@ export function AppHeader() {
       <header className="sticky top-0 z-40 border-b border-border bg-white/95 shadow-sm backdrop-blur">
         <div className="brand-accent h-[3px]" />
         <div className="mx-auto flex h-14 max-w-screen-2xl items-center justify-between px-4 sm:px-6">
-          <Link href="/app" aria-label={t("common.appName")}>
-            <BrandLogo />
-          </Link>
+          <div className="flex min-w-0 items-center gap-3">
+            <Link href="/app" aria-label={t("common.appName")} className="shrink-0">
+              <BrandLogo />
+            </Link>
+            <div className="hidden h-6 w-px bg-slate-200 sm:block" />
+            <KaemnurAttribution className="hidden sm:inline-flex" />
+          </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
             <Badge variant={license.type}>{licenseLabel}</Badge>
