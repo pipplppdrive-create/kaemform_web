@@ -2,7 +2,6 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { ArrowRight, UserPlus } from "lucide-react";
 import { BrandLogo } from "@/components/shared/BrandLogo";
-import { KaemnurAttribution } from "@/components/shared/KaemnurAttribution";
 
 const KNOWN_ERRORS = [
   "invalid_token",
@@ -32,10 +31,7 @@ export default async function LoginPage({
     <main className="brand-wash flex min-h-screen items-center justify-center p-4 py-10">
       <div className="w-full max-w-md rounded-[20px] border border-white/80 bg-white p-6 shadow-form sm:p-8">
         <div className="mb-7 flex justify-center">
-          <BrandLogo />
-        </div>
-        <div className="-mt-3 mb-7 flex justify-center">
-          <KaemnurAttribution className="bg-slate-50 px-3 py-1.5 ring-1 ring-slate-100" />
+          <BrandLogo attribution="App by kaemnur" />
         </div>
         {errorKey && (
           <div className="mb-5 rounded-input border border-error/30 bg-red-50 p-3 text-sm font-medium text-error">

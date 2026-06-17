@@ -2,9 +2,11 @@ import { cn } from "@/lib/utils";
 
 export function BrandLogo({
   compact = false,
+  attribution,
   className,
 }: {
   compact?: boolean;
+  attribution?: string;
   className?: string;
 }) {
   return (
@@ -18,8 +20,15 @@ export function BrandLogo({
         />
       </span>
       {!compact && (
-        <span className="text-[17px] font-bold tracking-tight text-primary-800">
-          KaemForm
+        <span className="flex flex-col">
+          <span className="text-[17px] font-bold leading-none tracking-tight text-primary-800">
+            KaemForm
+          </span>
+          {attribution && (
+            <span className="mt-1 text-[10px] font-medium leading-none text-slate-500">
+              {attribution}
+            </span>
+          )}
         </span>
       )}
     </div>

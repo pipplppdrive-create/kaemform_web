@@ -4,7 +4,6 @@ import { getTranslations } from "next-intl/server";
 import { ArrowRight, BarChart3, FileCheck2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui";
 import { BrandLogo } from "@/components/shared/BrandLogo";
-import { KaemnurAttribution } from "@/components/shared/KaemnurAttribution";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function LandingPage() {
@@ -29,11 +28,7 @@ export default async function LandingPage() {
     <main className="brand-wash min-h-screen overflow-hidden">
       <div className="brand-accent h-[3px]" />
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-3">
-          <BrandLogo />
-          <div className="hidden h-6 w-px bg-slate-200 sm:block" />
-          <KaemnurAttribution className="hidden sm:inline-flex" />
-        </div>
+        <BrandLogo attribution="App by kaemnur" />
         <Link href="/login" className="text-sm font-semibold text-primary-700 transition-colors hover:text-primary-900">
           {t("ctaLogin")}
         </Link>
@@ -59,9 +54,6 @@ export default async function LandingPage() {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-          </div>
-          <div className="mt-6 flex justify-center lg:justify-start sm:hidden">
-            <KaemnurAttribution />
           </div>
         </div>
 
