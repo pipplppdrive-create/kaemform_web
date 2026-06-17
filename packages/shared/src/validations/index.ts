@@ -31,6 +31,14 @@ export const fieldConditionSchema = z.object({
   action: z.enum(["show", "hide"]),
 });
 
+export const fieldDependencySchema = z.object({
+  field_id: z.string(),
+  source: z.enum(["wilayah-514-kabkota"]).optional(),
+  options_by_value: z.record(z.array(fieldOptionSchema)).optional(),
+  placeholder: z.string().optional(),
+  disabled_placeholder: z.string().optional(),
+});
+
 export const formFieldSchema = z.object({
   id: z.string(),
   type: z.enum(FIELD_TYPE_VALUES),
@@ -50,6 +58,7 @@ export const formFieldSchema = z.object({
     })
     .optional(),
   conditions: z.array(fieldConditionSchema).optional(),
+  dependent: fieldDependencySchema.optional(),
   scaleMin: z.number().optional(),
   scaleMax: z.number().optional(),
   scaleMinLabel: z.string().optional(),

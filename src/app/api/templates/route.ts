@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { FREE_TEMPLATE_CATEGORIES, hasFeature, saveTemplateSchema } from "@kaemform/shared";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth/session";
+import { STATIC_SYSTEM_TEMPLATES } from "@/lib/templates/system-templates";
 
 export async function GET(request: Request) {
   const session = await getSessionUser();
@@ -31,7 +32,15 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ templates: templates ?? [] });
+  if (filter === "mine") {
+    return NextResponse.json({ templates: templates ?? [] });
+  }
+
+  const staticTemplates = hasFeature(session.license.limits, "all_templates")
+    ? STATIC_SYSTEM_TEMPLATES
+    : STATIC_SYSTEM_TEMPLATES.filter((template) => FREE_TEMPLATE_CATEGORIES.includes(template.category));
+
+  return NextResponse.json({ templates: [...staticTemplates, ...(templates ?? [])] });
 }
 
 export async function POST(request: Request) {

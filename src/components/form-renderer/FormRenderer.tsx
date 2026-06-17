@@ -8,6 +8,7 @@ import { Button } from "@/components/ui";
 import { useToast } from "@/stores/toastStore";
 import { evaluateConditions } from "@/lib/conditions";
 import { validateResponse } from "@/lib/validations/response-validator";
+import { getKabKotaByProvinsi } from "@/data/wilayah-514";
 import { FieldRendererRegistry, NON_INPUT_TYPES } from "./fields/FieldInput";
 
 export interface FormRendererProps {
@@ -18,6 +19,47 @@ export interface FormRendererProps {
 }
 
 const DEFAULT_PRIMARY_COLOR = "#2E86DE";
+
+function toDropdownOptions(values: string[], prefix: string) {
+  return values.map((value, index) => ({
+    id: `${prefix}-${String(index + 1).padStart(3, "0")}`,
+    label: value,
+    value,
+  }));
+}
+
+function getDependentOptions(field: FormField, formData: ResponseData) {
+  const dependency = field.dependent;
+  if (!dependency) return field.options ?? [];
+
+  const parentValue = formData[dependency.field_id];
+  if (typeof parentValue !== "string" || !parentValue) return [];
+
+  if (dependency.source === "wilayah-514-kabkota") {
+    return toDropdownOptions(getKabKotaByProvinsi(parentValue), `${field.id}-${parentValue}`);
+  }
+
+  return dependency.options_by_value?.[parentValue] ?? [];
+}
+
+function isDependentFieldDisabled(field: FormField, formData: ResponseData) {
+  if (!field.dependent) return false;
+
+  const parentValue = formData[field.dependent.field_id];
+  return typeof parentValue !== "string" || !parentValue;
+}
+
+function buildRenderableField(field: FormField, formData: ResponseData): FormField {
+  if (!field.dependent) return field;
+
+  return {
+    ...field,
+    options: getDependentOptions(field, formData),
+    placeholder: isDependentFieldDisabled(field, formData)
+      ? field.dependent.disabled_placeholder || field.placeholder
+      : field.dependent.placeholder || field.placeholder,
+  };
+}
 
 export function FormRenderer({ form, formSlug, preview, hideBranding }: FormRendererProps) {
   const t = useTranslations();
@@ -114,7 +156,24 @@ export function FormRenderer({ form, formSlug, preview, hideBranding }: FormRend
   }, [pages.length]);
 
   const setValue = (fieldId: string, value: ResponseFieldValue) => {
-    setFormData((prev) => ({ ...prev, [fieldId]: value }));
+    setFormData((prev) => {
+      const next = { ...prev, [fieldId]: value };
+      const pending = [fieldId];
+
+      while (pending.length > 0) {
+        const changedFieldId = pending.pop();
+        const dependentFields = fields.filter((field) => field.dependent?.field_id === changedFieldId);
+
+        for (const dependentField of dependentFields) {
+          if (dependentField.id in next) {
+            delete next[dependentField.id];
+          }
+          pending.push(dependentField.id);
+        }
+      }
+
+      return next;
+    });
   };
 
   const getFieldErrorText = (fieldId: string) => {
@@ -268,6 +327,7 @@ export function FormRenderer({ form, formSlug, preview, hideBranding }: FormRend
               );
             }
 
+            const renderField = buildRenderableField(field, formData);
             const error = getFieldErrorText(field.id);
 
             return (
@@ -278,10 +338,11 @@ export function FormRenderer({ form, formSlug, preview, hideBranding }: FormRend
                 </label>
                 {field.description && <p className="mb-2 text-xs leading-5 text-slate-500">{field.description}</p>}
                 <Component
-                  field={field}
+                  field={renderField}
                   value={formData[field.id] ?? null}
                   onChange={(value) => setValue(field.id, value)}
                   error={error}
+                  disabled={isDependentFieldDisabled(field, formData)}
                   sectionMeta={sectionMeta}
                 />
               </div>

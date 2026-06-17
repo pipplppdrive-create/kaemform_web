@@ -1,4 +1,5 @@
 const DEFAULT_KAEMNUR_URL = "https://kaemnur.com";
+const DEFAULT_KAEMNUR_PRODUCT_URL = "https://www.kaemnur.com/products/KaemForm";
 const DEFAULT_WEB_LOGIN_PATH = "/api/products/kaemform/web-login";
 const DEFAULT_REGISTER_PATH = "/register";
 
@@ -13,12 +14,16 @@ function buildUrl(value: string | undefined, fallbackPath: string): URL {
   return new URL(value || fallbackPath, `${baseUrl}/`);
 }
 
+export function getKaemnurProductUrl(): string {
+  return process.env.KAEMNUR_PRODUCT_URL || DEFAULT_KAEMNUR_PRODUCT_URL;
+}
+
 export function getKaemnurAuthUrl({
   mode,
-  callbackUrl,
+  redirectUrl,
 }: {
   mode: KaemnurAuthMode;
-  callbackUrl: string;
+  redirectUrl: string;
 }): string {
   const configuredUrl =
     mode === "register" ? process.env.KAEMNUR_REGISTER_URL : process.env.KAEMNUR_WEB_LOGIN_URL;
@@ -26,7 +31,7 @@ export function getKaemnurAuthUrl({
   const url = buildUrl(configuredUrl, fallbackPath);
 
   url.searchParams.set("product", "kaemform");
-  url.searchParams.set("redirect_to", callbackUrl);
+  url.searchParams.set("redirect_to", redirectUrl);
 
   if (mode === "register" && !configuredUrl) {
     url.searchParams.set("next", DEFAULT_WEB_LOGIN_PATH);

@@ -44,6 +44,16 @@ export interface FieldValidation {
   max_value?: number;
 }
 
+export type DependentOptionsSource = "wilayah-514-kabkota";
+
+export interface FieldDependency {
+  field_id: string;
+  source?: DependentOptionsSource;
+  options_by_value?: Record<string, FieldOption[]>;
+  placeholder?: string;
+  disabled_placeholder?: string;
+}
+
 export interface FormField {
   id: string;
   type: FieldType;
@@ -56,6 +66,7 @@ export interface FormField {
   options?: FieldOption[];
   validation?: FieldValidation;
   conditions?: FieldCondition[];
+  dependent?: FieldDependency;
   /** scale field */
   scaleMin?: number;
   scaleMax?: number;

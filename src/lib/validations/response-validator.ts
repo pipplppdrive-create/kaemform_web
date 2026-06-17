@@ -25,6 +25,10 @@ export function validateResponse(
     if (visibility[field.id] === false) continue;
 
     const value = data[field.id] ?? null;
+    if (field.dependent) {
+      const parentValue = data[field.dependent.field_id];
+      if (isEmptyValue(parentValue)) continue;
+    }
 
     if (field.required && isEmptyValue(value)) {
       errors[field.id] = { key: "required" };

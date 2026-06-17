@@ -8,6 +8,11 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth/session";
 import { generateFormSlug } from "@/lib/slug";
+import {
+  cloneTemplateSchema,
+  cloneTemplateSettings,
+  getStaticSystemTemplate,
+} from "@/lib/templates/system-templates";
 
 export async function POST(request: Request) {
   const session = await getSessionUser();
@@ -56,18 +61,25 @@ export async function POST(request: Request) {
   };
 
   if (template_id) {
-    const { data: template } = await supabase
-      .from("form_templates")
-      .select("schema, settings")
-      .eq("id", template_id)
-      .maybeSingle();
+    const staticTemplate = getStaticSystemTemplate(template_id);
 
-    if (!template) {
-      return NextResponse.json({ error: "template_not_found" }, { status: 404 });
+    if (staticTemplate) {
+      schema = cloneTemplateSchema(staticTemplate.schema);
+      settings = { ...settings, ...cloneTemplateSettings(staticTemplate.settings) };
+    } else {
+      const { data: template } = await supabase
+        .from("form_templates")
+        .select("schema, settings")
+        .eq("id", template_id)
+        .maybeSingle();
+
+      if (!template) {
+        return NextResponse.json({ error: "template_not_found" }, { status: 404 });
+      }
+
+      schema = template.schema as FormSchema;
+      settings = { ...settings, ...(template.settings as Partial<FormSettings>) };
     }
-
-    schema = template.schema as FormSchema;
-    settings = { ...settings, ...(template.settings as Partial<FormSettings>) };
   }
 
   const slug = generateFormSlug();

@@ -9,6 +9,7 @@ export interface FieldInputProps {
   value: ResponseFieldValue;
   onChange: (value: ResponseFieldValue) => void;
   error?: string;
+  disabled?: boolean;
   sectionMeta?: { index: number; total: number };
 }
 
@@ -107,14 +108,15 @@ function MultipleChoiceInput({ field, value, onChange, error }: FieldInputProps)
   );
 }
 
-function DropdownInput({ field, value, onChange, error }: FieldInputProps) {
+function DropdownInput({ field, value, onChange, error, disabled }: FieldInputProps) {
   return (
     <div>
       <select
         value={(value as string) ?? ""}
         onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
         className={cn(
-          "h-11 w-full rounded-input border bg-slate-50 px-3.5 text-sm text-slate-900 shadow-sm transition-all hover:border-slate-300 focus:border-primary-500 focus:bg-white focus:ring-4 focus:ring-primary-100",
+          "h-11 w-full rounded-input border bg-slate-50 px-3.5 text-sm text-slate-900 shadow-sm transition-all hover:border-slate-300 focus:border-primary-500 focus:bg-white focus:ring-4 focus:ring-primary-100 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400",
           error ? "border-error" : "border-border"
         )}
       >
