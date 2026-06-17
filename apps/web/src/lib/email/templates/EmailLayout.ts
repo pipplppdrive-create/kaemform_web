@@ -25,7 +25,7 @@ export function emailLayout(preheader: string, contentHtml: string): string {
                 </tr>
               </tbody>
             </table>
-            <p style="margin-top:16px;font-size:12px;color:#A1A1AA;">KaemForm — bagian dari ekosistem Kaemnur</p>
+            <p style="margin-top:16px;font-size:12px;color:#A1A1AA;">KaemForm standalone</p>
           </td>
         </tr>
       </tbody>

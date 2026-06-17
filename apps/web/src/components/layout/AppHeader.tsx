@@ -15,8 +15,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui";
 
-const KAEMNUR_STORE_URL = `${process.env.NEXT_PUBLIC_KAEMNUR_URL ?? "https://kaemnur.com"}/store`;
-
 export function AppHeader() {
   const t = useTranslations();
   const { user, logout } = useAuth();
@@ -83,14 +81,7 @@ export function AppHeader() {
               ? t("upgrade.trialBanner", { days: trialDaysRemaining })
               : t("upgrade.trialExpired")}
           </span>
-          <a
-            href={KAEMNUR_STORE_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-medium text-primary-600 hover:underline"
-          >
-            {t("common.upgrade")}
-          </a>
+          <span className="font-medium text-primary-600">{t("common.upgrade")}</span>
         </div>
       )}
     </>

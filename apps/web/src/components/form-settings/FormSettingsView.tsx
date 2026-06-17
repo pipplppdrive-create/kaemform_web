@@ -12,7 +12,6 @@ import { UpgradeModal } from "@/components/shared/UpgradeModal";
 import { QRCodeModal } from "@/components/shared/QRCodeModal";
 import { cn } from "@/lib/utils";
 
-const KAEMNUR_STORE_URL = `${process.env.NEXT_PUBLIC_KAEMNUR_URL ?? "https://kaemnur.com"}/store`;
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "";
 const SLUG_REGEX = /^[a-z0-9-]{3,50}$/;
 
@@ -354,11 +353,9 @@ export function FormSettingsView({
           </CardHeader>
           <CardContent className="flex flex-col gap-3">
             <p className="text-sm text-gray-600">{t("formSettings.retentionInfo", { days: settings.retention_days })}</p>
-            <a href={KAEMNUR_STORE_URL} target="_blank" rel="noopener noreferrer" className="self-start">
-              <Button type="button" variant="secondary" size="sm">
-                {t("formSettings.extendRetention")}
-              </Button>
-            </a>
+            <Button type="button" variant="secondary" size="sm" className="self-start" onClick={() => setUpgradeOpen(true)}>
+              {t("formSettings.extendRetention")}
+            </Button>
           </CardContent>
         </Card>
 

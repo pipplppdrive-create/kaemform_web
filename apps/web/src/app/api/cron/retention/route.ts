@@ -8,7 +8,7 @@ import {
 } from "@/lib/email/templates/RetentionFinalReminder";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "";
-const STORE_URL = `${process.env.NEXT_PUBLIC_KAEMNUR_URL ?? "https://kaemnur.com"}/store`;
+const SETTINGS_URL = `${APP_URL}/app/settings`;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 type AdminClient = ReturnType<typeof createAdminClient>;
@@ -78,7 +78,7 @@ async function sendReminders(admin: AdminClient, now: Date, withinDays: number, 
           responseCount: info.count,
           expiryDate,
           dashboardUrl,
-          storeUrl: STORE_URL,
+          storeUrl: SETTINGS_URL,
         })
       : getRetentionReminderSubject({
           formTitle,
@@ -86,7 +86,7 @@ async function sendReminders(admin: AdminClient, now: Date, withinDays: number, 
           expiryDate,
           days: withinDays,
           dashboardUrl,
-          storeUrl: STORE_URL,
+          storeUrl: SETTINGS_URL,
         });
 
     const html = isFinal
@@ -95,7 +95,7 @@ async function sendReminders(admin: AdminClient, now: Date, withinDays: number, 
           responseCount: info.count,
           expiryDate,
           dashboardUrl,
-          storeUrl: STORE_URL,
+          storeUrl: SETTINGS_URL,
         })
       : renderRetentionReminderEmail({
           formTitle,
@@ -103,7 +103,7 @@ async function sendReminders(admin: AdminClient, now: Date, withinDays: number, 
           expiryDate,
           days: withinDays,
           dashboardUrl,
-          storeUrl: STORE_URL,
+          storeUrl: SETTINGS_URL,
         });
 
     await resend.emails.send({ from: RESEND_FROM_EMAIL, to: owner.email as string, subject, html });

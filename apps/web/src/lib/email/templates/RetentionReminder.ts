@@ -32,11 +32,11 @@ export function renderRetentionReminderEmail({
     <ul style="font-size:14px;line-height:1.6;margin:0 0 12px;padding-left:20px;">
       <li>Unduh respons sebagai CSV dari dashboard</li>
       <li>Backup melalui aplikasi desktop KaemForm</li>
-      <li>Beli storage add-on untuk memperpanjang retensi</li>
+      <li>Cek pengaturan akun untuk opsi retensi yang tersedia</li>
     </ul>
     <div>
       ${emailButton(dashboardUrl, "Buka Dashboard")}
-      ${emailButtonSecondary(storeUrl, "Beli Storage Add-on")}
+      ${emailButtonSecondary(storeUrl, "Buka Pengaturan")}
     </div>
   `;
 

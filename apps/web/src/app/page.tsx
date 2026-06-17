@@ -6,8 +6,6 @@ import { Button } from "@/components/ui";
 import { BrandLogo } from "@/components/shared/BrandLogo";
 import { createClient } from "@/lib/supabase/server";
 
-const KAEMNUR_URL = process.env.NEXT_PUBLIC_KAEMNUR_URL ?? "https://kaemnur.com";
-
 export default async function LandingPage() {
   const supabase = await createClient();
   const {
@@ -56,11 +54,6 @@ export default async function LandingPage() {
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
-            <a href={KAEMNUR_URL} target="_blank" rel="noopener noreferrer">
-              <Button variant="secondary" size="lg" className="w-full sm:w-auto">
-                {t("ctaKaemnur")}
-              </Button>
-            </a>
           </div>
         </div>
 

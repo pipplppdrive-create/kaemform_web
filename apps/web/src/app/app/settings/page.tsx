@@ -1,47 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { CreditCard, Languages, UserRound } from "lucide-react";
-import { Badge, Button, Card, CardContent, CardHeader } from "@/components/ui";
+import { Badge, Card, CardContent, CardHeader } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { useLicense } from "@/hooks/useLicense";
-import { useToast } from "@/stores/toastStore";
-
-const KAEMNUR_STORE_URL = `${process.env.NEXT_PUBLIC_KAEMNUR_URL ?? "https://kaemnur.com"}/store`;
 
 export default function AccountSettingsPage() {
   const t = useTranslations("appSettings");
   const tCommon = useTranslations("common");
   const { user } = useAuth();
   const { license, trialDaysRemaining } = useLicense();
-  const router = useRouter();
-  const toast = useToast();
-  const [refreshing, setRefreshing] = useState(false);
 
   const licenseLabel =
     license.type === "pro" ? tCommon("pro") : license.type === "trial" ? tCommon("trial") : tCommon("free");
-
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    try {
-      const res = await fetch("/api/auth/sync-license", { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "error");
-
-      if (data.changed) {
-        toast({ title: t("refreshSuccess"), variant: "success" });
-        router.refresh();
-      } else {
-        toast({ title: t("refreshNoChange"), variant: "default" });
-      }
-    } catch {
-      toast({ title: tCommon("networkError"), variant: "error" });
-    } finally {
-      setRefreshing(false);
-    }
-  };
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
@@ -103,16 +75,9 @@ export default function AccountSettingsPage() {
             </span>
           </div>
 
-          <div className="mt-2 flex flex-wrap items-center justify-end gap-2">
-            <Button type="button" variant="secondary" size="sm" loading={refreshing} onClick={handleRefresh}>
-              {t("refreshLicense")}
-            </Button>
-            <a href={KAEMNUR_STORE_URL} target="_blank" rel="noopener noreferrer">
-              <Button type="button" size="sm">
-                {tCommon("upgrade")}
-              </Button>
-            </a>
-          </div>
+          <p className="mt-2 rounded-input bg-slate-50 p-3 text-sm leading-6 text-slate-500">
+            {t("licenseStandaloneNote")}
+          </p>
         </CardContent>
       </Card>
 

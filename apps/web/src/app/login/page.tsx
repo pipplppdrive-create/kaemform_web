@@ -21,7 +21,6 @@ export default async function LoginPage({
 }) {
   const { error } = await searchParams;
   const t = await getTranslations("auth");
-  const kaemnurUrl = process.env.NEXT_PUBLIC_KAEMNUR_URL ?? "https://kaemnur.com";
 
   const errorKey = KNOWN_ERRORS.includes(error as (typeof KNOWN_ERRORS)[number])
     ? (error as (typeof KNOWN_ERRORS)[number])
@@ -38,7 +37,7 @@ export default async function LoginPage({
             {t(`errors.${errorKey}`)}
           </div>
         )}
-        <LoginForm kaemnurUrl={kaemnurUrl} />
+        <LoginForm />
       </div>
     </main>
   );
