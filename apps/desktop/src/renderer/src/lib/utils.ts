@@ -33,15 +33,55 @@ export function normalizeKey(value: string): string {
     .replace(/[^a-z0-9]/g, "");
 }
 
+export function cleanPlaceholderLabel(value: string): string {
+  return value
+    .replace(/<[^>]+>/g, "")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/^\s*\{\{\s*/, "")
+    .replace(/\s*\}\}\s*$/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function matchColumn(placeholder: string, columns: string[]): string | undefined {
+  const label = cleanPlaceholderLabel(placeholder);
+  const normalizedPlaceholder = normalizeKey(label);
+  if (!normalizedPlaceholder) return undefined;
+
+  const normalizedColumns = columns.map((column) => ({
+    column,
+    normalized: normalizeKey(column),
+  }));
+
+  return (
+    normalizedColumns.find((item) => item.normalized === normalizedPlaceholder)?.column ??
+    normalizedColumns.find(
+      (item) =>
+        item.normalized.includes(normalizedPlaceholder) ||
+        normalizedPlaceholder.includes(item.normalized)
+    )?.column ??
+    normalizedColumns.find((item) => {
+      const words = label
+        .toLowerCase()
+        .split(/[^a-z0-9]+/i)
+        .map(normalizeKey)
+        .filter(Boolean);
+      return words.some((word) => item.normalized.includes(word));
+    })?.column
+  );
+}
+
 export function autoMap(
   placeholders: string[],
   columns: string[]
 ): Record<string, string> {
   return Object.fromEntries(
     placeholders.flatMap((placeholder) => {
-      const match = columns.find(
-        (column) => normalizeKey(column) === normalizeKey(placeholder)
-      );
+      const match = matchColumn(placeholder, columns);
       return match ? [[placeholder, match]] : [];
     })
   );

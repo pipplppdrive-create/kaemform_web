@@ -7,6 +7,30 @@ import { createPdf } from "./pdf-engine";
 import { exists, sanitizeFilename, timestampFolder } from "./file-manager";
 import type { GenerateProgress, GenerateResult } from "../../shared/types";
 
+function decodeXml(value: string): string {
+  return value
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'");
+}
+
+export function cleanPlaceholderName(value: string): string {
+  return decodeXml(value)
+    .replace(/<[^>]+>/g, "")
+    .replace(/^\s*\{\{\s*/, "")
+    .replace(/\s*\}\}\s*$/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function uniquePlaceholders(values: string[]): string[] {
+  return [...new Set(values.map(cleanPlaceholderName).filter(Boolean))].sort((a, b) =>
+    a.localeCompare(b, "id-ID")
+  );
+}
+
 function collectTagKeys(value: unknown, result = new Set<string>()): Set<string> {
   if (!value || typeof value !== "object") return result;
   for (const [key, nested] of Object.entries(value as Record<string, unknown>)) {
@@ -26,17 +50,15 @@ export async function extractPlaceholders(filePath: string): Promise<string[]> {
       paragraphLoop: true,
       linebreaks: true,
     });
-    return [...collectTagKeys(inspectModule.getAllTags())]
-      .map((tag) => tag.trim())
-      .filter(Boolean)
-      .sort();
+    return uniquePlaceholders([...collectTagKeys(inspectModule.getAllTags())]);
   } catch {
     const zip = new PizZip(content);
     const text = Object.keys(zip.files)
       .filter((name) => name.startsWith("word/") && name.endsWith(".xml"))
       .map((name) => zip.files[name].asText())
       .join(" ");
-    return [...new Set([...text.matchAll(/\{\{\s*([^{}]+?)\s*\}\}/g)].map((match) => match[1]))];
+    const plainText = decodeXml(text.replace(/<[^>]+>/g, ""));
+    return uniquePlaceholders([...plainText.matchAll(/\{\{\s*([^{}]+?)\s*\}\}/g)].map((match) => match[1]));
   }
 }
 
@@ -68,9 +90,10 @@ export function previewHtml(
 ): string {
   const fields = placeholders
     .map((placeholder) => {
-      const source = mapping[placeholder] ?? placeholder;
+      const cleanPlaceholder = cleanPlaceholderName(placeholder);
+      const source = mapping[placeholder] ?? mapping[cleanPlaceholder] ?? cleanPlaceholder;
       const value = record[source] ?? `{{${placeholder}}}`;
-      return `<div class="row"><span>${placeholder}</span><strong>${String(value ?? "")}</strong></div>`;
+      return `<div class="row"><span>${cleanPlaceholder}</span><strong>${String(value ?? "")}</strong></div>`;
     })
     .join("");
   return `<article class="document-preview">
@@ -115,10 +138,16 @@ export async function generateDocuments(params: {
 
     const record = params.records[index];
     const values = Object.fromEntries(
-      Object.entries(params.mapping).map(([placeholder, source]) => [
-        placeholder,
-        record[source] ?? "",
-      ])
+      Object.entries(params.mapping).flatMap(([placeholder, source]) => {
+        const value = record[source] ?? "";
+        const cleanPlaceholder = cleanPlaceholderName(placeholder);
+        return cleanPlaceholder === placeholder
+          ? [[placeholder, value]]
+          : [
+              [placeholder, value],
+              [cleanPlaceholder, value],
+            ];
+      })
     );
     const base = sanitizeFilename(String((firstSource && record[firstSource]) || `Dokumen_${index + 1}`));
     const docxPath = await uniqueFilePath(targetFolder, base, "docx");
@@ -144,8 +173,10 @@ export async function generateDocuments(params: {
         await fs.unlink(docxPath);
       }
       success += 1;
-    } catch {
+    } catch (error) {
       failed += 1;
+      const message = error instanceof Error ? error.message : "Generate gagal.";
+      warnings.add(`Baris ${index + 1}: ${message}`);
     }
   }
 

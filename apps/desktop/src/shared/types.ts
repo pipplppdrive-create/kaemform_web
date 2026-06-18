@@ -1,9 +1,18 @@
+export type DesktopLicenseType = "free" | "trial" | "pro";
+
+export interface DesktopLicense {
+  type: DesktopLicenseType;
+  expires_at: string | null;
+  trial_started_at?: string | null;
+}
+
 export interface DesktopUser {
   id: string;
   name: string;
   email: string;
   avatarUrl?: string;
   mode?: "cloud" | "local";
+  license?: DesktopLicense;
 }
 
 export interface WorkspaceRecord {
@@ -120,7 +129,7 @@ export interface RekapParams {
 
 export interface DesktopAPI {
   auth: {
-    login: () => Promise<{ configured: boolean }>;
+    login: (mode?: "login" | "register") => Promise<{ configured: boolean }>;
     password: (email: string, password: string) => Promise<DesktopUser>;
     local: () => Promise<DesktopUser>;
     logout: () => Promise<void>;

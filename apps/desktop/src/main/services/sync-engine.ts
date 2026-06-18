@@ -2,6 +2,7 @@ import type { BrowserWindow } from "electron";
 import { createClient, type Session, type SupabaseClient } from "@supabase/supabase-js";
 import WebSocket from "ws";
 import type {
+  DesktopLicense,
   DesktopUser,
   FormRecord,
   ResponseRecord,
@@ -19,18 +20,40 @@ import {
   setSetting,
 } from "./db";
 
-function getEnvironment(): { url: string; key: string; kaemnurUrl: string } {
+function getEnvironment(): { url: string; key: string; kaemnurUrl: string; kaemformWebUrl: string } {
   return {
     url: import.meta.env.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL || "",
     key: import.meta.env.VITE_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY || "",
     kaemnurUrl:
       import.meta.env.VITE_KAEMNUR_URL ||
       process.env.VITE_KAEMNUR_URL ||
-      "https://kaemnur.com",
+      "https://www.kaemnur.com",
+    kaemformWebUrl:
+      import.meta.env.VITE_KAEMFORM_WEB_URL ||
+      process.env.VITE_KAEMFORM_WEB_URL ||
+      "https://form.kaemnur.com",
   };
 }
 
-function toDesktopUser(session: Session, mode: "cloud" | "local" = "cloud"): DesktopUser {
+function normalizeLicense(value: unknown): DesktopLicense {
+  const raw = value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+  const type = raw.type === "pro" || raw.type === "trial" ? raw.type : "free";
+  const expiresAt = typeof raw.expires_at === "string" ? raw.expires_at : null;
+  const trialStartedAt =
+    typeof raw.trial_started_at === "string" ? raw.trial_started_at : null;
+
+  if (type !== "free" && expiresAt && new Date(expiresAt).getTime() < Date.now()) {
+    return { type: "free", expires_at: null, trial_started_at: trialStartedAt };
+  }
+
+  return { type, expires_at: expiresAt, trial_started_at: trialStartedAt };
+}
+
+function toDesktopUser(
+  session: Session,
+  mode: "cloud" | "local" = "cloud",
+  license?: DesktopLicense
+): DesktopUser {
   const metadata = session.user.user_metadata;
   return {
     id: session.user.id,
@@ -39,6 +62,7 @@ function toDesktopUser(session: Session, mode: "cloud" | "local" = "cloud"): Des
     email: session.user.email ?? "",
     avatarUrl: String(metadata.avatar_url || metadata.picture || "") || undefined,
     mode,
+    license: license ?? normalizeLicense(null),
   };
 }
 
@@ -85,6 +109,21 @@ export class SyncEngine {
     this.window?.webContents.send("auth:changed", user);
   }
 
+  private async getUserLicense(userId: string): Promise<DesktopLicense> {
+    if (!this.client) return normalizeLicense(null);
+    const { data } = await this.client
+      .from("users")
+      .select("license_cache")
+      .eq("id", userId)
+      .maybeSingle();
+
+    return normalizeLicense((data as { license_cache?: unknown } | null)?.license_cache);
+  }
+
+  private async toHydratedUser(session: Session): Promise<DesktopUser> {
+    return toDesktopUser(session, "cloud", await this.getUserLicense(session.user.id));
+  }
+
   async restoreSession(): Promise<DesktopUser | null> {
     const local = getSetting("local_user");
     if (local) return JSON.parse(local) as DesktopUser;
@@ -99,16 +138,29 @@ export class SyncEngine {
       });
       if (error || !data.session) return null;
       setSetting("auth_session", JSON.stringify(data.session));
-      return toDesktopUser(data.session);
+      return this.toHydratedUser(data.session);
     } catch {
       return null;
     }
   }
 
-  async loginUrl(): Promise<string | null> {
+  async loginUrl(mode: "login" | "register" = "login"): Promise<string | null> {
     if (!this.client) return null;
     const baseUrl = this.environment.kaemnurUrl.replace(/\/$/, "");
-    return `${baseUrl}/api/products/kaemform/desktop-login`;
+    const webCallback = new URL("/auth/callback", this.environment.kaemformWebUrl);
+    webCallback.searchParams.set("redirect_to", "kaemform://auth/callback");
+    const loginUrl = new URL(
+      mode === "register" ? "/register" : "/api/products/kaemform/web-login",
+      `${baseUrl}/`
+    );
+
+    loginUrl.searchParams.set("product", "kaemform");
+    loginUrl.searchParams.set("redirect_to", webCallback.toString());
+    if (mode === "register") {
+      loginUrl.searchParams.set("next", "/api/products/kaemform/web-login");
+    }
+
+    return loginUrl.toString();
   }
 
   async loginWithPassword(email: string, password: string): Promise<DesktopUser> {
@@ -127,7 +179,7 @@ export class SyncEngine {
     setSetting("auth_session", JSON.stringify(data.session));
     setSetting("refresh_token", data.session.refresh_token);
     setSetting("local_user", "");
-    const user = toDesktopUser(data.session);
+    const user = await this.toHydratedUser(data.session);
     this.emitAuth(user);
     void this.syncAll(false);
     return user;
@@ -159,7 +211,7 @@ export class SyncEngine {
     setSetting("auth_session", JSON.stringify(session));
     setSetting("refresh_token", session.refresh_token);
     setSetting("local_user", "");
-    const user = toDesktopUser(session);
+    const user = await this.toHydratedUser(session);
     this.emitAuth(user);
     void this.syncAll(false);
     return user;
@@ -171,6 +223,7 @@ export class SyncEngine {
       name: "Pengguna Lokal",
       email: "lokal@kaemform.app",
       mode: "local",
+      license: normalizeLicense(null),
     };
     setSetting("local_user", JSON.stringify(user));
     setSetting("auth_session", "");

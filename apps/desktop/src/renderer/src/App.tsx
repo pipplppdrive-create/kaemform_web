@@ -47,6 +47,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import type {
+  DesktopUser,
   FormRecord,
   HistoryRecord,
   ImportedFileRecord,
@@ -69,6 +70,7 @@ import {
 import { api, usingMockApi } from "./lib/api";
 import {
   autoMap,
+  cleanPlaceholderLabel,
   cn,
   formatDate,
   responsesToRows,
@@ -101,34 +103,17 @@ function LoadingScreen() {
 
 function Login() {
   const { setUser, loadData } = useAppStore();
-  const [loading, setLoading] = useState<"cloud" | "password" | "local" | null>(null);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState<"cloud" | "register" | "local" | null>(null);
   const [error, setError] = useState("");
 
-  async function loginCloud() {
-    setLoading("cloud");
+  async function loginCloud(mode: "login" | "register" = "login") {
+    setLoading(mode === "register" ? "register" : "cloud");
     setError("");
     try {
-      const result = await api.auth.login();
+      const result = await api.auth.login(mode);
       if (!result.configured) {
         setError("Supabase belum dikonfigurasi. Gunakan mode lokal untuk melanjutkan.");
       }
-    } catch (loginError) {
-      setError(loginError instanceof Error ? loginError.message : "Login gagal.");
-    } finally {
-      setLoading(null);
-    }
-  }
-
-  async function loginPassword(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading("password");
-    setError("");
-    try {
-      const user = await api.auth.password(email, password);
-      setUser(user);
-      await loadData();
     } catch (loginError) {
       setError(loginError instanceof Error ? loginError.message : "Login gagal.");
     } finally {
@@ -167,53 +152,33 @@ function Login() {
           <div className="my-7 h-px bg-slate-100" />
           <h2 className="text-lg font-bold text-slate-900">Masuk ke workspace</h2>
           <p className="mt-1 text-sm leading-6 text-slate-500">
-            Sinkronkan data KaemForm atau lanjutkan dengan data lokal di komputer ini.
+            Masuk melalui Kaemnur di browser. Setelah berhasil, KaemForm Desktop akan terbuka otomatis.
           </p>
           <div className="mt-6 space-y-3">
             <Button
               size="lg"
               className="w-full"
               loading={loading === "cloud"}
-              onClick={loginCloud}
+              onClick={() => loginCloud("login")}
             >
               <Cloud className="h-5 w-5" />
-              Masuk dengan Google
+              Masuk dengan Kaemnur
+            </Button>
+            <Button
+              size="lg"
+              variant="secondary"
+              className="w-full"
+              loading={loading === "register"}
+              onClick={() => loginCloud("register")}
+            >
+              <ExternalLink className="h-5 w-5" />
+              Daftar dengan Kaemnur
             </Button>
             <div className="flex items-center gap-3 py-1 text-xs text-slate-400">
               <div className="h-px flex-1 bg-slate-200" />
-              atau gunakan akun KaemForm Web
+              atau
               <div className="h-px flex-1 bg-slate-200" />
             </div>
-            <form className="space-y-3" onSubmit={loginPassword}>
-              <Input
-                type="email"
-                label="Email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="nama@email.com"
-                autoComplete="email"
-                required
-              />
-              <Input
-                type="password"
-                label="Kata sandi"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                placeholder="Minimal 8 karakter"
-                autoComplete="current-password"
-                minLength={8}
-                required
-              />
-              <Button
-                type="submit"
-                size="lg"
-                variant="secondary"
-                className="w-full"
-                loading={loading === "password"}
-              >
-                Masuk dengan Email
-              </Button>
-            </form>
             <Button
               size="lg"
               variant="ghost"
@@ -900,9 +865,9 @@ function Generate() {
                 {selectedTemplate.placeholders.map((placeholder) => (
                   <Input
                     key={placeholder}
-                    label={placeholder}
+                    label={cleanPlaceholderLabel(placeholder)}
                     value={manualRecord[placeholder] ?? ""}
-                    placeholder={`Isi ${placeholder}`}
+                    placeholder={`Isi ${cleanPlaceholderLabel(placeholder)}`}
                     onChange={(event) =>
                       setManualRecord((value) => ({
                         ...value,
@@ -969,12 +934,17 @@ function Generate() {
             </div>
             {selectedTemplate.placeholders.map((placeholder) => {
               const mapped = generate.mapping[placeholder];
+              const label = cleanPlaceholderLabel(placeholder);
               return (
                 <div
                   key={placeholder}
                   className="grid grid-cols-[1fr_1fr_100px] items-center gap-4 border-t border-slate-100 px-5 py-4"
                 >
-                  <code className="text-sm font-semibold text-kaem-700">{`{{${placeholder}}}`}</code>
+                  <div className="min-w-0">
+                    <code className="inline-flex max-w-full rounded-md bg-kaem-50 px-2.5 py-1 text-sm font-semibold text-kaem-700">
+                      <span className="truncate">{`{{${label}}}`}</span>
+                    </code>
+                  </div>
                   <Select
                     value={mapped ?? ""}
                     onChange={(event) =>
@@ -1062,7 +1032,19 @@ function Generate() {
               <h3 className="mt-5 text-xl font-bold text-slate-900">
                 {generate.result.success} dokumen berhasil dibuat
               </h3>
+              {generate.result.failed > 0 && (
+                <p className="mt-2 text-sm font-semibold text-red-600">
+                  {generate.result.failed} dokumen gagal dibuat
+                </p>
+              )}
               <p className="mt-2 text-sm text-slate-500">{generate.result.outputPath}</p>
+              {generate.result.warnings.length > 0 && (
+                <div className="mx-auto mt-4 max-w-2xl rounded-input border border-amber-200 bg-amber-50 p-3 text-left text-sm text-amber-800">
+                  {generate.result.warnings.slice(0, 3).map((warning) => (
+                    <p key={warning}>{warning}</p>
+                  ))}
+                </div>
+              )}
               <div className="mt-6 flex justify-center gap-3">
                 <Button onClick={() => api.generate.openFolder(generate.result!.outputPath)}>
                   <FolderOpen className="h-4 w-4" /> Buka Folder
@@ -1629,10 +1611,46 @@ function Detail({ label, value }: { label: string; value: string }) {
   );
 }
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function getLicenseMeta(user: DesktopUser | null) {
+  const license = user?.license ?? { type: "free" as const, expires_at: null };
+  const expiresAt = license.expires_at ? new Date(license.expires_at) : null;
+  const trialDays = expiresAt ? Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / DAY_MS)) : 0;
+
+  if (license.type === "pro") {
+    return {
+      label: "Pro",
+      badge: "success" as const,
+      title: "Full fitur aktif",
+      description: expiresAt ? `Berlaku hingga ${expiresAt.toLocaleDateString("id-ID")}.` : "Tidak ada batas waktu.",
+    };
+  }
+
+  if (license.type === "trial") {
+    return {
+      label: "Trial",
+      badge: "warning" as const,
+      title: `Trial tersisa ${trialDays} hari`,
+      description: expiresAt
+        ? `Masa trial berakhir pada ${expiresAt.toLocaleDateString("id-ID")}.`
+        : "Masa trial aktif.",
+    };
+  }
+
+  return {
+    label: "Free",
+    badge: "default" as const,
+    title: "Fitur dasar aktif",
+    description: "Mode Free memiliki batasan fitur. Upgrade ke Pro untuk membuka fitur penuh.",
+  };
+}
+
 function SettingsPage() {
   const { user, workspaces, settings, syncStatus, updateSettings, setUser, loadData } =
     useAppStore();
   const [busy, setBusy] = useState(false);
+  const licenseMeta = getLicenseMeta(user);
 
   async function syncNow() {
     setBusy(true);
@@ -1674,6 +1692,16 @@ function SettingsPage() {
           <Button variant="secondary" onClick={logout}>
             <LogOut className="h-4 w-4" /> Keluar
           </Button>
+        </div>
+        <div className="mt-5 rounded-input border border-slate-200 bg-slate-50 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">Lisensi Akun</p>
+              <p className="mt-1 font-bold text-slate-800">{licenseMeta.title}</p>
+              <p className="mt-1 text-sm leading-6 text-slate-500">{licenseMeta.description}</p>
+            </div>
+            <Badge variant={licenseMeta.badge}>{licenseMeta.label}</Badge>
+          </div>
         </div>
       </SettingsSection>
 

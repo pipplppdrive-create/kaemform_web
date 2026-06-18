@@ -17,7 +17,7 @@ function onEvent<T>(channel: string, listener: (value: T) => void): () => void {
 
 const api: DesktopAPI = {
   auth: {
-    login: () => ipcRenderer.invoke("auth:login"),
+    login: (mode = "login") => ipcRenderer.invoke("auth:login", mode),
     password: (email: string, password: string) =>
       ipcRenderer.invoke("auth:password", email, password),
     local: () => ipcRenderer.invoke("auth:local"),

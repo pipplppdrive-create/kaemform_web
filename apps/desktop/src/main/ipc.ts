@@ -41,8 +41,8 @@ async function pickFile(
 }
 
 export function registerIpc(window: BrowserWindow, syncEngine: SyncEngine): void {
-  ipcMain.handle("auth:login", async () => {
-    const url = await syncEngine.loginUrl();
+  ipcMain.handle("auth:login", async (_event, mode: "login" | "register" = "login") => {
+    const url = await syncEngine.loginUrl(mode);
     if (!url) return { configured: false };
     await shell.openExternal(url);
     return { configured: true };

@@ -139,6 +139,11 @@ const mockApi: DesktopAPI = {
         name: email.split("@")[0] || "KaemForm",
         email,
         mode: "cloud",
+        license: {
+          type: "trial",
+          expires_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          trial_started_at: new Date().toISOString(),
+        },
       };
       authListeners.forEach((listener) => listener(mockUser));
       return mockUser;
@@ -149,6 +154,7 @@ const mockApi: DesktopAPI = {
         name: "Kaemnur",
         email: "kaemnur@example.com",
         mode: "local",
+        license: { type: "free", expires_at: null },
       };
       authListeners.forEach((listener) => listener(mockUser));
       return mockUser;

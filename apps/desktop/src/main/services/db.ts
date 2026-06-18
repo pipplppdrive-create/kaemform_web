@@ -8,6 +8,7 @@ import type {
   TemplateRecord,
   WorkspaceRecord,
 } from "../../shared/types";
+import { cleanPlaceholderName } from "./docx-engine";
 
 let database: Database.Database | null = null;
 
@@ -144,9 +145,12 @@ export function saveTemplate(template: Omit<TemplateRecord, "created_at" | "upda
 }
 
 function parseTemplate(row: Record<string, unknown>): TemplateRecord {
+  const placeholders = JSON.parse(String(row.placeholders)) as string[];
   return {
     ...(row as unknown as TemplateRecord),
-    placeholders: JSON.parse(String(row.placeholders)) as string[],
+    placeholders: [...new Set(placeholders.map(cleanPlaceholderName).filter(Boolean))].sort((a, b) =>
+      a.localeCompare(b, "id-ID")
+    ),
   };
 }
 

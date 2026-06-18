@@ -5,9 +5,10 @@
   "description": "KaemForm Desktop document generation workspace",
   "main": "./out/main/index.js",
   "scripts": {
-    "dev": "electron-vite dev",
+    "dev": "node scripts/run-electron-vite.cjs dev",
+    "start": "npm run dev",
     "build": "npm run type-check && electron-vite build",
-    "preview": "electron-vite preview",
+    "preview": "node scripts/run-electron-vite.cjs preview",
     "type-check": "tsc --noEmit -p tsconfig.json",
     "lint": "tsc --noEmit -p tsconfig.json",
     "package": "npm run build && electron-builder --dir",
