@@ -40,14 +40,16 @@ export async function kaemnurFetch(path: string, init?: RequestInit): Promise<Re
   });
 }
 
-/** GET check-license by email or kaemnur_uid. */
+/** GET check-license by email, kaemnur_uid, or a purchase license code. */
 export async function checkLicense(params: {
   email?: string;
   kaemnur_uid?: string;
+  license_code?: string;
 }): Promise<KaemnurCheckLicenseResponse> {
   const search = new URLSearchParams();
   if (params.email) search.set("email", params.email);
   if (params.kaemnur_uid) search.set("kaemnur_uid", params.kaemnur_uid);
+  if (params.license_code) search.set("license_code", params.license_code);
 
   const res = await kaemnurFetch(`/check-license?${search.toString()}`);
   if (!res.ok) {

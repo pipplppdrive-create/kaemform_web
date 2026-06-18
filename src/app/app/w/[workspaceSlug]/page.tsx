@@ -37,6 +37,7 @@ export default async function WorkspaceDashboardPage({
       forms={(forms ?? []) as Form[]}
       maxForms={session?.license.limits.max_forms_per_workspace ?? 3}
       canCustomSlug={hasFeature(session?.license.limits, "custom_slug")}
+      maxResponsesPerForm={session?.license.limits.max_responses_per_form ?? 50}
     />
   );
 }

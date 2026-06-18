@@ -9,12 +9,14 @@ import {
   BookmarkPlus,
   CalendarDays,
   Check,
+  Cloud,
   Copy,
   ExternalLink,
   Link2,
   MoreVertical,
   Pencil,
   QrCode,
+  RefreshCw,
   Settings,
   Trash2,
 } from "lucide-react";
@@ -36,15 +38,18 @@ import { useToast } from "@/stores/toastStore";
 import { QRCodeModal } from "@/components/shared/QRCodeModal";
 
 const SLUG_REGEX = /^[a-z0-9-]{3,50}$/;
+const KAEMFORM_DOWNLOAD_URL = "https://www.kaemnur.com/products/KaemForm";
 
 export function FormCard({
   form,
   workspaceSlug,
   canCustomSlug,
+  maxResponsesPerForm,
 }: {
   form: Form;
   workspaceSlug: string;
   canCustomSlug: boolean;
+  maxResponsesPerForm: number;
 }) {
   const t = useTranslations();
   const router = useRouter();
@@ -72,6 +77,26 @@ export function FormCard({
   const base = `/app/w/${workspaceSlug}/f/${form.id}`;
   const formUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/${slug}`;
   const isPublic = status === "published" || status === "closed";
+  const retentionDays = form.settings.retention_days ?? 30;
+  const responseLimitText =
+    maxResponsesPerForm === -1 ? t("workspace.storageUnlimited") : maxResponsesPerForm.toLocaleString("id-ID");
+
+  const handleSyncDesktop = () => {
+    const syncUrl = `kaemform://sync?form_id=${encodeURIComponent(form.id)}&workspace_slug=${encodeURIComponent(
+      workspaceSlug
+    )}`;
+    let fallbackTimer: number | null = null;
+    const clearFallback = () => {
+      if (fallbackTimer) window.clearTimeout(fallbackTimer);
+    };
+
+    window.addEventListener("blur", clearFallback, { once: true });
+    fallbackTimer = window.setTimeout(() => {
+      window.removeEventListener("blur", clearFallback);
+      window.location.href = KAEMFORM_DOWNLOAD_URL;
+    }, 1000);
+    window.location.href = syncUrl;
+  };
 
   const handleCopyLink = async () => {
     await navigator.clipboard.writeText(formUrl);
@@ -275,6 +300,33 @@ export function FormCard({
           </DropdownMenu>
         </div>
         </div>
+
+        {form.response_count > 0 && (
+          <div className="rounded-input border border-amber-200 bg-amber-50 px-3 py-2 text-sm leading-6 text-amber-900">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-start gap-2">
+                <Cloud className="mt-1 h-4 w-4 shrink-0 text-amber-600" />
+                <p>
+                  {t("workspace.formStorageNotice", {
+                    count: form.response_count.toLocaleString("id-ID"),
+                    limit: responseLimitText,
+                    days: retentionDays,
+                  })}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="w-full shrink-0 sm:w-auto"
+                onClick={handleSyncDesktop}
+              >
+                <RefreshCw className="h-4 w-4" />
+                {t("workspace.syncDesktop")}
+              </Button>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-2">

@@ -41,3 +41,48 @@ export async function syncLicense(userId: string, kaemnurUid: string): Promise<L
 
   return cache;
 }
+
+export async function activateLicenseCode(userId: string, licenseCode: string): Promise<LicenseCache | null> {
+  const code = licenseCode.trim();
+  if (!code || !isKaemnurConfigured()) {
+    return null;
+  }
+
+  const admin = createAdminClient();
+  const [{ data: user }, result] = await Promise.all([
+    admin.from("users").select("license_cache").eq("id", userId).maybeSingle(),
+    checkLicense({ license_code: code }),
+  ]);
+
+  if (
+    !result.found ||
+    !result.license ||
+    result.license.type === "free" ||
+    (result.license.expires_at && new Date(result.license.expires_at).getTime() < Date.now())
+  ) {
+    return null;
+  }
+
+  const incomingCache: LicenseCache = {
+    type: result.license.type,
+    expires_at: result.license.expires_at,
+    storage_addon: result.license.storage_addon,
+    limits: TIER_LIMITS[result.license.type],
+  };
+  const cache = mergeIncomingLicenseWithLocalTrial(
+    incomingCache,
+    user?.license_cache as LicenseCache | null | undefined
+  );
+  const profilePatch: Record<string, unknown> = {
+    license_cache: cache,
+    license_synced_at: new Date().toISOString(),
+  };
+
+  if (result.kaemnur_uid) profilePatch.kaemnur_uid = result.kaemnur_uid;
+  if (result.name) profilePatch.name = result.name;
+  if (typeof result.avatar_url !== "undefined") profilePatch.avatar_url = result.avatar_url;
+
+  await admin.from("users").update(profilePatch).eq("id", userId);
+
+  return cache;
+}

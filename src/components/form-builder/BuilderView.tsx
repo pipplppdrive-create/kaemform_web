@@ -69,7 +69,6 @@ function BuilderFormSettingsModal({
       open={open}
       onOpenChange={onOpenChange}
       title={t("title")}
-      description={t("description")}
       className="max-w-lg"
       footer={
         <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>

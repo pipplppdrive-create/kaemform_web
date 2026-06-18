@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Check, Copy, Eye, EyeOff, Palette, QrCode } from "lucide-react";
+import { ArrowLeft, Check, Copy, Eye, EyeOff, QrCode, Settings } from "lucide-react";
 import type { FormStatus } from "@kaemform/shared";
 import { Badge, Button } from "@/components/ui";
 
@@ -103,8 +103,14 @@ export function BuilderTopbar({
         )}
 
         {!previewMode && (
-          <Button type="button" variant="secondary" size="sm" onClick={onOpenFormSettings}>
-            <Palette className="h-4 w-4" />
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            aria-label={t("builder.formSettings.shortTitle")}
+            onClick={onOpenFormSettings}
+          >
+            <Settings className="h-4 w-4" />
             {t("builder.formSettings.shortTitle")}
           </Button>
         )}

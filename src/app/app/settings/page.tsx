@@ -8,6 +8,7 @@ import { CreditCard, ExternalLink, Languages, RefreshCw, Timer, UserRound } from
 import { Badge, Button, Card, CardContent, CardHeader, Input } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { useLicense } from "@/hooks/useLicense";
+import { useToast } from "@/stores/toastStore";
 
 const KAEMFORM_PRODUCT_URL = "https://www.kaemnur.com/products/KaemForm";
 
@@ -15,38 +16,44 @@ export default function AccountSettingsPage() {
   const t = useTranslations("appSettings");
   const tCommon = useTranslations("common");
   const router = useRouter();
+  const toast = useToast();
   const { user } = useAuth();
   const { license, trialDaysRemaining } = useLicense();
   const [licenseInput, setLicenseInput] = useState("");
   const [syncing, setSyncing] = useState(false);
-  const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
   const licenseLabel =
     license.type === "pro" ? tCommon("pro") : license.type === "trial" ? tCommon("trial") : tCommon("free");
   const hasTrialStarted = Boolean(license.trial_started_at);
   const trialExpiryDate = license.expires_at ? new Date(license.expires_at).toLocaleDateString("id-ID") : null;
 
-  const handleSyncLicense = async () => {
+  const handleActivateLicense = async () => {
+    const code = licenseInput.trim();
+    if (!code) {
+      toast({ title: t("licenseRequired"), variant: "error" });
+      return;
+    }
+
     setSyncing(true);
-    setSyncMessage(null);
 
     try {
       const res = await fetch("/api/auth/sync-license", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ license: licenseInput.trim() || undefined }),
+        body: JSON.stringify({ license: code }),
       });
       const json = await res.json().catch(() => ({}));
 
-      if (!res.ok) {
-        setSyncMessage(tCommon("error"));
+      if (!res.ok || !json.changed) {
+        toast({ title: t("licenseFailed"), variant: "error" });
         return;
       }
 
-      setSyncMessage(json.changed ? t("refreshSuccess") : t("refreshNoChange"));
+      setLicenseInput("");
+      toast({ title: t("licenseActivated"), variant: "success" });
       router.refresh();
     } catch {
-      setSyncMessage(tCommon("networkError"));
+      toast({ title: tCommon("networkError"), variant: "error" });
     } finally {
       setSyncing(false);
     }
@@ -141,28 +148,36 @@ export default function AccountSettingsPage() {
             {t("licenseStandaloneNote")}
           </p>
 
-          <div className="rounded-input border border-border bg-white p-3">
-            <Input
-              label={t("licenseInputLabel")}
-              placeholder={t("licenseInputPlaceholder")}
-              value={licenseInput}
-              onChange={(event) => setLicenseInput(event.target.value)}
-              description={t("licenseInputHint")}
-            />
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <Button type="button" variant="secondary" size="sm" loading={syncing} onClick={handleSyncLicense}>
-                <RefreshCw className="h-4 w-4" />
-                {t("refreshLicense")}
-              </Button>
-              <Link href={KAEMFORM_PRODUCT_URL} target="_blank" rel="noopener noreferrer">
-                <Button type="button" size="sm">
-                  <ExternalLink className="h-4 w-4" />
-                  {t("buyLicense")}
+          {license.type !== "pro" && (
+            <div className="rounded-input border border-border bg-white p-3">
+              <Input
+                label={t("licenseInputLabel")}
+                placeholder={t("licenseInputPlaceholder")}
+                value={licenseInput}
+                onChange={(event) => setLicenseInput(event.target.value)}
+                description={t("licenseInputHint")}
+              />
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  loading={syncing}
+                  disabled={!licenseInput.trim()}
+                  onClick={handleActivateLicense}
+                >
+                  <RefreshCw className="h-4 w-4" />
+                  {t("activateLicense")}
                 </Button>
-              </Link>
-              {syncMessage && <p className="text-xs font-medium text-slate-500">{syncMessage}</p>}
+                <Link href={KAEMFORM_PRODUCT_URL} target="_blank" rel="noopener noreferrer">
+                  <Button type="button" size="sm">
+                    <ExternalLink className="h-4 w-4" />
+                    {t("buyLicense")}
+                  </Button>
+                </Link>
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 

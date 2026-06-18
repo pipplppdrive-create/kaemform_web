@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Download, FileCheck2, FileText, MessageSquare, Plus, Timer } from "lucide-react";
+import { ArrowLeft, FileCheck2, FileText, MessageSquare, Plus } from "lucide-react";
 import type { Form, FormStatus, Workspace } from "@kaemform/shared";
 import {
   Button,
@@ -21,18 +21,19 @@ import { WorkspaceSettingsMenu } from "./WorkspaceSettingsMenu";
 
 type StatusFilter = "all" | FormStatus;
 type SortOption = "newest" | "title" | "responses";
-const KAEMFORM_PRODUCT_URL = "https://www.kaemnur.com/products/KaemForm";
 
 export function WorkspaceView({
   workspace,
   forms,
   maxForms,
   canCustomSlug,
+  maxResponsesPerForm,
 }: {
   workspace: Workspace;
   forms: Form[];
   maxForms: number;
   canCustomSlug: boolean;
+  maxResponsesPerForm: number;
 }) {
   const t = useTranslations();
   const router = useRouter();
@@ -47,10 +48,6 @@ export function WorkspaceView({
   const publishedCount = forms.filter((form) => form.status === "published").length;
   const draftCount = forms.filter((form) => form.status === "draft").length;
   const responseCount = forms.reduce((sum, form) => sum + form.response_count, 0);
-  const minRetentionDays = forms.reduce(
-    (min, form) => Math.min(min, form.settings.retention_days ?? min),
-    Number.POSITIVE_INFINITY
-  );
 
   const visibleForms = useMemo(() => {
     let result = forms;
@@ -131,23 +128,6 @@ export function WorkspaceView({
         ))}
       </div>
 
-      {responseCount > 0 && Number.isFinite(minRetentionDays) && (
-        <div className="mt-4 rounded-card border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-amber-900">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-3">
-              <Timer className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-              <p>{t("workspace.retentionBackupNotice", { days: minRetentionDays })}</p>
-            </div>
-            <a href={KAEMFORM_PRODUCT_URL} target="_blank" rel="noopener noreferrer" className="shrink-0">
-              <Button type="button" variant="secondary" size="sm" className="w-full sm:w-auto">
-                <Download className="h-4 w-4" />
-                {t("workspace.downloadDesktop")}
-              </Button>
-            </a>
-          </div>
-        </div>
-      )}
-
       <div className="mt-9 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold text-slate-900">Formulir</h2>
@@ -220,6 +200,7 @@ export function WorkspaceView({
                 form={form}
                 workspaceSlug={workspace.slug}
                 canCustomSlug={canCustomSlug}
+                maxResponsesPerForm={maxResponsesPerForm}
               />
             ))}
           </div>

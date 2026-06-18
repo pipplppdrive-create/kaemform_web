@@ -150,6 +150,9 @@ export function FormRenderer({ form, formSlug, preview, hideBranding }: FormRend
   const sectionMode = form.settings.section_mode ?? "single";
   const primaryColor = form.settings.theme?.primary_color || DEFAULT_PRIMARY_COLOR;
   const hasCustomColor = primaryColor.toUpperCase() !== DEFAULT_PRIMARY_COLOR;
+  const accentStyle = hasCustomColor
+    ? { background: `linear-gradient(to right, ${primaryColor}, ${primaryColor}33, transparent)` }
+    : undefined;
   const visibleSectionFields = useMemo(
     () => fields.filter((field) => field.type === "section" && visibility[field.id] !== false),
     [fields, visibility]
@@ -346,7 +349,10 @@ export function FormRenderer({ form, formSlug, preview, hideBranding }: FormRend
       <div className="rounded-[18px] border border-white/80 bg-white p-5 shadow-form sm:p-8">
         <h1 className="text-2xl font-bold tracking-tight text-slate-900">{form.title}</h1>
         {form.description && <p className="mt-2 text-sm leading-6 text-slate-500">{form.description}</p>}
-        <div className="mt-6 h-0.5 rounded-full bg-gradient-to-r from-primary-200 via-primary-100 to-transparent" />
+        <div
+          className="mt-6 h-0.5 rounded-full bg-gradient-to-r from-primary-200 via-primary-100 to-transparent"
+          style={accentStyle}
+        />
 
         {paged && (
           <div className="mt-6 flex flex-wrap gap-2">

@@ -1,31 +1,30 @@
 import { NextResponse } from "next/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { getSessionUser } from "@/lib/auth/session";
 import { resolveEffectiveLicense } from "@/lib/auth/license";
-import { syncLicense } from "@/lib/auth/license-sync";
+import { activateLicenseCode } from "@/lib/auth/license-sync";
 
-export async function POST() {
+export async function POST(request: Request) {
   const session = await getSessionUser();
   if (!session) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const admin = createAdminClient();
-  const { data: user } = await admin
-    .from("users")
-    .select("kaemnur_uid")
-    .eq("id", session.id)
-    .maybeSingle();
+  const body = await request.json().catch(() => ({}));
+  const licenseCode = typeof body.license === "string" ? body.license.trim() : "";
 
-  if (!user) {
-    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  if (!licenseCode) {
+    return NextResponse.json({ error: "license_required" }, { status: 400 });
   }
 
-  const cache = await syncLicense(session.id, user.kaemnur_uid as string);
+  try {
+    const cache = await activateLicenseCode(session.id, licenseCode);
 
-  if (!cache) {
-    return NextResponse.json({ changed: false });
+    if (!cache) {
+      return NextResponse.json({ error: "invalid_license" }, { status: 400 });
+    }
+
+    return NextResponse.json({ changed: true, license: resolveEffectiveLicense(cache) });
+  } catch {
+    return NextResponse.json({ error: "license_sync_failed" }, { status: 502 });
   }
-
-  return NextResponse.json({ changed: true, license: resolveEffectiveLicense(cache) });
 }
