@@ -4,6 +4,11 @@ import { TIER_LIMITS, type LicenseCache } from "@kaemform/shared";
 import { mergeIncomingLicenseWithLocalTrial } from "./trial";
 
 type LicenseLookupResult = Awaited<ReturnType<typeof checkLicense>>;
+type UserLicenseRow = {
+  license_cache?: LicenseCache | null;
+  email?: string | null;
+  kaemnur_uid?: string | null;
+};
 
 function hasUsableLicense(
   result: LicenseLookupResult | null
@@ -14,6 +19,42 @@ function hasUsableLicense(
       result.license.type !== "free" &&
       (!result.license.expires_at || new Date(result.license.expires_at).getTime() >= Date.now())
   );
+}
+
+function createProCache(existing: LicenseCache | null | undefined): LicenseCache {
+  return {
+    type: "pro",
+    expires_at: null,
+    storage_addon: null,
+    trial_started_at: existing?.trial_started_at ?? null,
+    limits: TIER_LIMITS.pro,
+  };
+}
+
+async function activateViaKaemnurStoreValidation(
+  userId: string,
+  licenseCode: string,
+  user: UserLicenseRow | null | undefined
+): Promise<LicenseCache | null> {
+  const baseUrl = (process.env.NEXT_PUBLIC_KAEMNUR_URL ?? "https://kaemnur.com").replace(/\/+$/, "");
+  const res = await fetch(`${baseUrl}/api/licenses/validate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      key: licenseCode,
+      deviceId: `kaemform-account:${userId}`,
+      platform: "WEB",
+    }),
+  }).catch(() => null);
+
+  if (!res?.ok) return null;
+
+  const json = await res.json().catch(() => null);
+  if (json?.valid !== true || !String(json.product ?? "").toLowerCase().includes("kaemform")) {
+    return null;
+  }
+
+  return createProCache(user?.license_cache);
 }
 
 /**
@@ -78,7 +119,15 @@ export async function activateLicenseCode(userId: string, licenseCode: string): 
   }
 
   if (!hasUsableLicense(result)) {
-    return null;
+    const validatedCache = await activateViaKaemnurStoreValidation(userId, code, user);
+    if (!validatedCache) return null;
+
+    await admin
+      .from("users")
+      .update({ license_cache: validatedCache, license_synced_at: new Date().toISOString() })
+      .eq("id", userId);
+
+    return validatedCache;
   }
 
   const incomingCache: LicenseCache = {
