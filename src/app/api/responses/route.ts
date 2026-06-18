@@ -14,10 +14,10 @@ import { validateResponse } from "@/lib/validations/response-validator";
 import { checkRateLimit, getClientIp, hashIp } from "@/lib/rate-limit";
 import { resend, RESEND_FROM_EMAIL } from "@/lib/email/resend";
 import { renderResponseNotificationEmail, getResponseNotificationSubject } from "@/lib/email/templates/ResponseNotification";
+import { buildPublicUrl } from "@/lib/public-url";
 
 const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW_MS = 60_000;
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
@@ -141,7 +141,7 @@ async function sendResponseNotifications(
   const license = resolveEffectiveLicense(owner.license_cache as Parameters<typeof resolveEffectiveLicense>[0]);
   if (!hasFeature(license.limits, "email_notification")) return;
 
-  const responsesUrl = `${APP_URL}/app/w/${workspace.slug}/f/${formId}/responses`;
+  const responsesUrl = buildPublicUrl(`/app/w/${workspace.slug}/f/${formId}/responses`);
   const subject = getResponseNotificationSubject({ formTitle, responsesUrl });
   const html = renderResponseNotificationEmail({ formTitle, responsesUrl });
 

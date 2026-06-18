@@ -6,9 +6,9 @@ import {
   renderRetentionFinalReminderEmail,
   getRetentionFinalReminderSubject,
 } from "@/lib/email/templates/RetentionFinalReminder";
+import { buildPublicUrl } from "@/lib/public-url";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "";
-const SETTINGS_URL = `${APP_URL}/app/settings`;
+const SETTINGS_URL = buildPublicUrl("/app/settings");
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 type AdminClient = ReturnType<typeof createAdminClient>;
@@ -68,7 +68,7 @@ async function sendReminders(admin: AdminClient, now: Date, withinDays: number, 
     const { data: owner } = await admin.from("users").select("email").eq("id", workspace.owner_id as string).maybeSingle();
     if (!owner?.email) continue;
 
-    const dashboardUrl = `${APP_URL}/app/w/${workspace.slug}/f/${formId}/responses`;
+    const dashboardUrl = buildPublicUrl(`/app/w/${workspace.slug}/f/${formId}/responses`);
     const expiryDate = formatDate(info.expiresAt);
     const formTitle = form.title as string;
 

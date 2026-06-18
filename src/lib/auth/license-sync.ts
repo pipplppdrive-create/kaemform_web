@@ -3,9 +3,22 @@ import { checkLicense, isKaemnurConfigured } from "@/lib/supabase/kaemnur";
 import { TIER_LIMITS, type LicenseCache } from "@kaemform/shared";
 import { mergeIncomingLicenseWithLocalTrial } from "./trial";
 
+type LicenseLookupResult = Awaited<ReturnType<typeof checkLicense>>;
+
+function hasUsableLicense(
+  result: LicenseLookupResult | null
+): result is LicenseLookupResult & { license: NonNullable<LicenseLookupResult["license"]> } {
+  return Boolean(
+    result?.found &&
+      result.license &&
+      result.license.type !== "free" &&
+      (!result.license.expires_at || new Date(result.license.expires_at).getTime() >= Date.now())
+  );
+}
+
 /**
  * Sync a user's license_cache from the Kaemnur API. No-op (returns the
- * current cache unchanged) while the Kaemnur bridge is not configured —
+ * current cache unchanged) while the Kaemnur bridge is not configured -
  * during this phase the admin keeps the default Pro cache set at signup.
  */
 export async function syncLicense(userId: string, kaemnurUid: string): Promise<LicenseCache | null> {
@@ -49,17 +62,22 @@ export async function activateLicenseCode(userId: string, licenseCode: string): 
   }
 
   const admin = createAdminClient();
-  const [{ data: user }, result] = await Promise.all([
-    admin.from("users").select("license_cache").eq("id", userId).maybeSingle(),
-    checkLicense({ license_code: code }),
-  ]);
+  const { data: user } = await admin
+    .from("users")
+    .select("license_cache, email, kaemnur_uid")
+    .eq("id", userId)
+    .maybeSingle();
 
-  if (
-    !result.found ||
-    !result.license ||
-    result.license.type === "free" ||
-    (result.license.expires_at && new Date(result.license.expires_at).getTime() < Date.now())
-  ) {
+  let result = await checkLicense({ license_code: code }).catch(() => null);
+  if (!result || !hasUsableLicense(result)) {
+    result = await checkLicense({
+      license_code: code,
+      email: typeof user?.email === "string" ? user.email : undefined,
+      kaemnur_uid: typeof user?.kaemnur_uid === "string" ? user.kaemnur_uid : undefined,
+    }).catch(() => null);
+  }
+
+  if (!hasUsableLicense(result)) {
     return null;
   }
 

@@ -22,6 +22,7 @@ import { useFormBuilderStore } from "@/stores/formBuilderStore";
 import { FormRenderer } from "@/components/form-renderer/FormRenderer";
 import { UpgradeModal } from "@/components/shared/UpgradeModal";
 import { QRCodeModal } from "@/components/shared/QRCodeModal";
+import { buildPublicFormUrl } from "@/lib/public-url";
 import { BuilderTopbar } from "./BuilderTopbar";
 import { BuilderPalette, BuilderPaletteContent } from "./BuilderPalette";
 import { BuilderCanvas } from "./BuilderCanvas";
@@ -320,7 +321,7 @@ export function BuilderView({
   const activeIconName = activeDrag ? FIELD_TYPES.find((f) => f.type === activeDrag)?.icon : null;
   const ActiveIcon = activeIconName ? ICONS[activeIconName] ?? LucideIcons.Square : null;
 
-  const formUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/${form.slug}`;
+  const formUrl = buildPublicFormUrl(form.slug);
   const totalPoints = fields.reduce((sum, field) => sum + (field.points ?? 0), 0);
 
   return (

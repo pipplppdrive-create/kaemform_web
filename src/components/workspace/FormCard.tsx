@@ -36,6 +36,7 @@ import {
 } from "@/components/ui";
 import { useToast } from "@/stores/toastStore";
 import { QRCodeModal } from "@/components/shared/QRCodeModal";
+import { buildPublicFormUrl } from "@/lib/public-url";
 
 const SLUG_REGEX = /^[a-z0-9-]{3,50}$/;
 const KAEMFORM_DOWNLOAD_URL = "https://www.kaemnur.com/products/KaemForm";
@@ -75,7 +76,7 @@ export function FormCard({
   const [statusLoading, setStatusLoading] = useState(false);
 
   const base = `/app/w/${workspaceSlug}/f/${form.id}`;
-  const formUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/${slug}`;
+  const formUrl = buildPublicFormUrl(slug);
   const isPublic = status === "published" || status === "closed";
   const retentionDays = form.settings.retention_days ?? 30;
   const responseLimitText =
@@ -469,7 +470,7 @@ export function FormCard({
           value={customSlug}
           onChange={(event) => setCustomSlug(event.target.value.toLowerCase())}
           error={customSlugError ?? undefined}
-          description={`${process.env.NEXT_PUBLIC_APP_URL ?? ""}/${customSlug || "link-form"}`}
+          description={buildPublicFormUrl(customSlug || "link-form")}
         />
       </Modal>
 

@@ -11,8 +11,8 @@ import { useToast } from "@/stores/toastStore";
 import { UpgradeModal } from "@/components/shared/UpgradeModal";
 import { QRCodeModal } from "@/components/shared/QRCodeModal";
 import { cn } from "@/lib/utils";
+import { buildPublicFormUrl, getPublicAppUrl } from "@/lib/public-url";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "";
 const SLUG_REGEX = /^[a-z0-9-]{3,50}$/;
 const DEFAULT_PRIMARY_COLOR = "#2563EB";
 
@@ -89,7 +89,8 @@ export function FormSettingsView({
   const [reopenLoading, setReopenLoading] = useState(false);
 
   const skipFirstSave = useRef(true);
-  const formUrl = `${APP_URL}/${slug}`;
+  const appUrl = getPublicAppUrl();
+  const formUrl = buildPublicFormUrl(slug);
   const canEditSlug = canCustomSlug && status === "draft";
 
   useEffect(() => {
@@ -282,7 +283,7 @@ export function FormSettingsView({
                 {!canCustomSlug && <ProBadgeButton onClick={() => setUpgradeOpen(true)} />}
               </div>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
-                <span className="shrink-0 pt-3 text-sm text-slate-400">{APP_URL}/</span>
+                <span className="shrink-0 pt-3 text-sm text-slate-400">{appUrl}/</span>
                 <Input
                   value={slug}
                   onChange={(e) => setSlug(e.target.value.toLowerCase())}

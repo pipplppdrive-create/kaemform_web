@@ -13,25 +13,41 @@ export interface KaemnurCheckLicenseResponse {
   };
 }
 
-/** True once KAEMNUR_API_URL / KAEMNUR_API_KEY are configured (Kaemnur bridge revision). */
 export function isKaemnurConfigured(): boolean {
   return Boolean(process.env.KAEMNUR_API_URL && process.env.KAEMNUR_API_KEY);
 }
 
-/**
- * Fetch wrapper for the Kaemnur API (Project A). Throws if the bridge is
- * not configured — callers should check `isKaemnurConfigured()` first and
- * fall back to local defaults during the standalone-login phase.
- */
-export async function kaemnurFetch(path: string, init?: RequestInit): Promise<Response> {
+function buildKaemnurApiUrl(path: string): string {
   const baseUrl = process.env.KAEMNUR_API_URL;
-  const apiKey = process.env.KAEMNUR_API_KEY;
-
-  if (!baseUrl || !apiKey) {
+  if (!baseUrl) {
     throw new Error("Kaemnur API is not configured (KAEMNUR_API_URL / KAEMNUR_API_KEY)");
   }
 
-  return fetch(`${baseUrl}${path}`, {
+  const trimmedBase = baseUrl.replace(/\/+$/, "");
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  const endpointPath = normalizedPath.split("?")[0] ?? "";
+  const query = normalizedPath.slice(endpointPath.length);
+
+  try {
+    const base = new URL(trimmedBase);
+    const basePath = base.pathname.replace(/\/+$/, "");
+    if (basePath.endsWith(endpointPath)) {
+      return `${trimmedBase}${query}`;
+    }
+  } catch {
+    // Keep the configured value intact; fetch will report invalid URLs.
+  }
+
+  return `${trimmedBase}${normalizedPath}`;
+}
+
+export async function kaemnurFetch(path: string, init?: RequestInit): Promise<Response> {
+  const apiKey = process.env.KAEMNUR_API_KEY;
+  if (!apiKey) {
+    throw new Error("Kaemnur API is not configured (KAEMNUR_API_URL / KAEMNUR_API_KEY)");
+  }
+
+  return fetch(buildKaemnurApiUrl(path), {
     ...init,
     headers: {
       ...init?.headers,
@@ -40,7 +56,6 @@ export async function kaemnurFetch(path: string, init?: RequestInit): Promise<Re
   });
 }
 
-/** GET check-license by email, kaemnur_uid, or a purchase license code. */
 export async function checkLicense(params: {
   email?: string;
   kaemnur_uid?: string;
