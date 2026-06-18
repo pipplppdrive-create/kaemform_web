@@ -17,6 +17,7 @@ interface FormBuilderState {
   init: (formId: string, fields: FormField[]) => void;
   setFields: (fields: FormField[]) => void;
   addField: (type: FieldType, index?: number) => void;
+  duplicateField: (id: string) => void;
   removeField: (id: string) => void;
   updateField: (id: string, partial: Partial<FormField>) => void;
   moveField: (from: number, to: number) => void;
@@ -71,6 +72,28 @@ export const useFormBuilderStore = create<FormBuilderState>((set, get) => ({
     next.splice(insertAt, 0, newField);
     setFields(reorder(next));
     set({ selectedFieldId: newField.id });
+  },
+
+  duplicateField: (id) => {
+    const { fields, setFields } = get();
+    const index = fields.findIndex((f) => f.id === id);
+    const source = fields[index];
+    if (index === -1 || !source) return;
+
+    const nextId = nanoid(8);
+    const clone: FormField = {
+      ...source,
+      id: nextId,
+      label: `${source.label} Salinan`,
+      options: source.options?.map((option) => ({
+        ...option,
+        id: `${nextId}_${nanoid(5)}`,
+      })),
+    };
+    const next = [...fields];
+    next.splice(index + 1, 0, clone);
+    setFields(reorder(next));
+    set({ selectedFieldId: nextId });
   },
 
   removeField: (id) => {

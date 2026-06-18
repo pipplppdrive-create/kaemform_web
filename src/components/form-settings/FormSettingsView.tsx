@@ -14,6 +14,21 @@ import { cn } from "@/lib/utils";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "";
 const SLUG_REGEX = /^[a-z0-9-]{3,50}$/;
+const DEFAULT_PRIMARY_COLOR = "#2563EB";
+
+function normalizeFormSettings(settings: FormSettings): FormSettings {
+  return {
+    ...settings,
+    section_mode: settings.section_mode ?? "single",
+    theme: {
+      primary_color: settings.theme?.primary_color ?? DEFAULT_PRIMARY_COLOR,
+      font: settings.theme?.font ?? "default",
+    },
+    quiz_enabled: settings.quiz_enabled ?? false,
+    randomize_questions: settings.randomize_questions ?? false,
+    randomize_options: settings.randomize_options ?? false,
+  };
+}
 
 function isValidUrl(value: string): boolean {
   try {
@@ -60,10 +75,7 @@ export function FormSettingsView({
   const [slug, setSlug] = useState(form.slug);
   const [slugError, setSlugError] = useState<string | null>(null);
   const [status, setStatus] = useState<FormStatus>(form.status);
-  const [settings, setSettings] = useState<FormSettings>({
-    ...form.settings,
-    section_mode: form.settings.section_mode ?? "single",
-  });
+  const [settings, setSettings] = useState<FormSettings>(normalizeFormSettings(form.settings));
   const [emailsInput, setEmailsInput] = useState(settings.notification_emails.join(", "));
   const [redirectUrlInput, setRedirectUrlInput] = useState(settings.redirect_url ?? "");
   const [copied, setCopied] = useState(false);

@@ -153,7 +153,9 @@
     "renameWorkspace": "Ubah Nama Workspace",
     "deleteWorkspace": "Hapus Workspace",
     "deleteWorkspaceConfirm": "Workspace dan semua formulirnya akan dihapus. Tindakan ini tidak dapat dibatalkan.",
-    "limitFormsReached": "Batas formulir untuk workspace ini tercapai."
+    "limitFormsReached": "Batas formulir untuk workspace ini tercapai.",
+    "retentionBackupNotice": "Respons cloud akan dihapus otomatis sesuai retensi mulai {days} hari. Backup di KaemDesktop sebelum data kedaluwarsa.",
+    "downloadDesktop": "Unduh KaemDesktop"
   },
   "form": {
     "menu": {
@@ -279,7 +281,28 @@
           "is_empty": "kosong",
           "is_not_empty": "tidak kosong"
         }
+      },
+      "quiz": {
+        "title": "Nilai Quiz",
+        "hint": "Poin",
+        "points": "Poin",
+        "answerKey": "Kunci jawaban",
+        "noAnswer": "Belum dipilih"
       }
+    },
+    "formSettings": {
+      "shortTitle": "Tema & Quiz",
+      "title": "Tema & Quiz",
+      "description": "Atur warna formulir, mode quiz, dan randomisasi.",
+      "themeTitle": "Warna tema",
+      "customColor": "Warna kustom",
+      "quizTitle": "Quiz",
+      "quizEnabled": "Aktifkan nilai quiz",
+      "randomQuestions": "Acak pertanyaan",
+      "randomOptions": "Acak jawaban",
+      "randomHint": "Randomisasi berlaku saat responden membuka formulir atau saat pratinjau dimuat ulang.",
+      "totalPoints": "{points} poin total",
+      "done": "Selesai"
     },
     "noFieldSelected": "Pilih field untuk mengatur properti"
   },
@@ -348,8 +371,14 @@
     "exportedAt": "Diekspor pada",
     "retentionBanner": "Data disimpan {days} hari",
     "retentionWarning": "Beberapa respons akan dihapus dalam waktu kurang dari 7 hari.",
+    "retentionCountdown": "Respons paling cepat dihapus otomatis dalam {days} hari ({date}).",
+    "retentionBackupHint": "Backup di KaemDesktop sebelum masa retensi habis.",
+    "downloadDesktop": "Unduh KaemDesktop",
     "newResponse": "Respons baru diterima",
     "searchPlaceholder": "Cari respons...",
+    "columnsButton": "{count} kolom",
+    "columnsTitle": "Kolom ditampilkan",
+    "columnsShowAll": "Tampilkan semua",
     "metadataTitle": "Metadata",
     "submittedAt": "Dikirim pada",
     "ipHash": "Hash IP",
@@ -425,6 +454,14 @@
     "refreshSuccess": "Lisensi berhasil diperbarui",
     "refreshNoChange": "Tidak ada perubahan pada lisensi Anda",
     "licenseStandaloneNote": "Lisensi disinkronkan dari akun Kaemnur. Gunakan refresh jika baru membeli atau memperpanjang lisensi.",
+    "licenseInputLabel": "Kode / Email Lisensi",
+    "licenseInputPlaceholder": "Masukkan kode atau email pembelian",
+    "licenseInputHint": "Setelah membeli lisensi, sinkronkan ulang agar status akun diperbarui.",
+    "buyLicense": "Beli Lisensi",
+    "trialCountdownTitle": "Trial Pro tersisa {days} hari",
+    "trialCountdownDescription": "Masa trial berakhir pada {date}. Countdown tetap berjalan walaupun workspace dihapus.",
+    "trialStartsOnWorkspace": "Trial Pro 14 hari dimulai saat Anda membuat workspace pertama.",
+    "trialEnded": "Trial akun ini sudah pernah digunakan. Beli lisensi untuk mengaktifkan kembali fitur Pro.",
     "languageTitle": "Bahasa",
     "languageNote": "Saat ini hanya Bahasa Indonesia yang tersedia."
   },

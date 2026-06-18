@@ -3,6 +3,7 @@ import { jwtVerify } from "jose";
 import { TIER_LIMITS, type LaunchTokenPayload, type LicenseCache } from "@kaemform/shared";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { mergeIncomingLicenseWithLocalTrial } from "@/lib/auth/trial";
 
 function redirectWithError(origin: string, error: string) {
   return NextResponse.redirect(`${origin}/login?error=${error}`);
@@ -71,7 +72,7 @@ export async function GET(request: Request) {
   }
 
   const admin = createAdminClient();
-  const licenseCache: LicenseCache = {
+  const incomingLicenseCache: LicenseCache = {
     type: payload.license.type,
     expires_at: payload.license.expires_at,
     storage_addon: payload.license.storage_addon,
@@ -106,6 +107,10 @@ export async function GET(request: Request) {
 
   const existingUser = userByKaemnurId ?? userByEmail;
   const authUserId = linkData.user.id;
+  const licenseCache = mergeIncomingLicenseWithLocalTrial(
+    incomingLicenseCache,
+    existingUser?.license_cache as LicenseCache | null | undefined
+  );
 
   if (existingUser && existingUser.id !== authUserId) {
     return redirectWithError(origin, "account_conflict");

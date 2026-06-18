@@ -1,9 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, ChevronRight, Inbox } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Columns3, Inbox } from "lucide-react";
 import type { FormField, FormResponse, ResponseData } from "@kaemform/shared";
-import { Button, EmptyState, Input, Skeleton } from "@/components/ui";
+import { Button, EmptyState, Input, Popover, PopoverContent, PopoverTrigger, Skeleton } from "@/components/ui";
 import { formatFieldValue } from "@/lib/export/response-format";
 
 const PREVIEW_FIELD_COUNT = 5;
@@ -34,17 +35,87 @@ export function ResponsesTable({
   const t = useTranslations("responses");
   const tCommon = useTranslations("common");
 
-  const columns = previewFields.slice(0, PREVIEW_FIELD_COUNT);
+  const fieldIdsSignature = previewFields.map((field) => field.id).join("|");
+  const defaultColumnIds = previewFields.slice(0, PREVIEW_FIELD_COUNT).map((field) => field.id);
+  const [selectedColumnIds, setSelectedColumnIds] = useState<string[]>(defaultColumnIds);
+  const columns = previewFields.filter((field) => selectedColumnIds.includes(field.id));
   const totalPages = Math.max(1, Math.ceil(total / limit));
+
+  useEffect(() => {
+    setSelectedColumnIds((current) => {
+      const availableFieldIds = new Set(previewFields.map((field) => field.id));
+      const valid = current.filter((id) => availableFieldIds.has(id));
+      if (valid.length === current.length && valid.every((id, index) => id === current[index])) {
+        return current;
+      }
+      return valid.length > 0 ? valid : defaultColumnIds;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fieldIdsSignature]);
+
+  const toggleColumn = (fieldId: string) => {
+    setSelectedColumnIds((current) => {
+      if (current.includes(fieldId)) {
+        return current.length <= 1 ? current : current.filter((id) => id !== fieldId);
+      }
+      return [...current, fieldId];
+    });
+  };
+
+  const showAllColumns = () => {
+    setSelectedColumnIds(previewFields.map((field) => field.id));
+  };
 
   return (
     <div className="flex flex-col gap-4">
-      <Input
-        value={search}
-        onChange={(e) => onSearchChange(e.target.value)}
-        placeholder={t("searchPlaceholder")}
-        className="max-w-sm"
-      />
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <Input
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder={t("searchPlaceholder")}
+          className="max-w-sm"
+        />
+        {previewFields.length > 0 && (
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button type="button" variant="secondary" className="justify-center sm:self-start">
+                <Columns3 className="h-4 w-4" />
+                {t("columnsButton", { count: columns.length })}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-72 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-sm font-bold text-slate-900">{t("columnsTitle")}</p>
+                <button
+                  type="button"
+                  onClick={showAllColumns}
+                  className="text-xs font-semibold text-primary-700 hover:text-primary-900"
+                >
+                  {t("columnsShowAll")}
+                </button>
+              </div>
+              <div className="mt-3 max-h-72 overflow-y-auto pr-1">
+                {previewFields.map((field) => {
+                  const checked = selectedColumnIds.includes(field.id);
+                  return (
+                    <button
+                      key={field.id}
+                      type="button"
+                      onClick={() => toggleColumn(field.id)}
+                      className="flex w-full items-center gap-2 rounded-input px-2 py-2 text-left text-sm text-slate-700 hover:bg-primary-50"
+                    >
+                      <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded border border-primary-200 bg-white text-primary-700">
+                        {checked && <Check className="h-3.5 w-3.5" />}
+                      </span>
+                      <span className="min-w-0 flex-1 truncate">{field.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </PopoverContent>
+          </Popover>
+        )}
+      </div>
 
       <div className="hidden overflow-x-auto rounded-card border border-border bg-white shadow-card sm:block">
         <table className="w-full text-left text-sm">

@@ -112,9 +112,9 @@ export const FieldBuilderRegistry: Record<FieldType, (props: FieldPreviewProps) 
   paragraph: (props) => <ParagraphPreview {...props} />,
 };
 
-export function FieldPreview({ field }: FieldPreviewProps) {
+export function FieldPreview({ field, sectionMeta }: FieldPreviewProps) {
   const Component = FieldBuilderRegistry[field.type];
-  return <Component field={field} />;
+  return <Component field={field} sectionMeta={sectionMeta} />;
 }
 
 export const NO_LABEL_TYPES: FieldType[] = ["section", "paragraph"];

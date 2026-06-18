@@ -18,7 +18,8 @@ export interface FormRendererProps {
   hideBranding?: boolean;
 }
 
-const DEFAULT_PRIMARY_COLOR = "#2E86DE";
+const DEFAULT_PRIMARY_COLOR = "#2563EB";
+const CHOICE_TYPES: FormField["type"][] = ["single_choice", "multiple_choice", "dropdown"];
 
 function toDropdownOptions(values: string[], prefix: string) {
   return values.map((value, index) => ({
@@ -42,6 +43,66 @@ function getDependentOptions(field: FormField, formData: ResponseData) {
   return dependency.options_by_value?.[parentValue] ?? [];
 }
 
+function hashString(value: string): number {
+  let hash = 2166136261;
+  for (let i = 0; i < value.length; i += 1) {
+    hash ^= value.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function shuffleStable<T>(items: T[], seed: string): T[] {
+  const next = [...items];
+  let state = hashString(seed) || 1;
+
+  for (let index = next.length - 1; index > 0; index -= 1) {
+    state = Math.imul(state ^ (state >>> 15), 2246822519) >>> 0;
+    const swapIndex = state % (index + 1);
+    const current = next[index] as T;
+    next[index] = next[swapIndex] as T;
+    next[swapIndex] = current;
+  }
+
+  return next;
+}
+
+function randomizeQuestionOrder(fields: FormField[], enabled: boolean, seed: string): FormField[] {
+  if (!enabled) return fields;
+
+  const blocks: FormField[][] = [];
+  let current: FormField[] = [];
+
+  for (const field of fields) {
+    if (field.type === "section" && current.length > 0) {
+      blocks.push(current);
+      current = [field];
+    } else {
+      current.push(field);
+    }
+  }
+
+  if (current.length > 0) blocks.push(current);
+
+  return blocks.flatMap((block, blockIndex) => {
+    const [first, ...rest] = block;
+    const section = first?.type === "section" ? [first] : [];
+    const items = first?.type === "section" ? rest : block;
+    const paragraphs = items.filter((field) => field.type === "paragraph");
+    const questions = items.filter((field) => field.type !== "paragraph");
+
+    return [...section, ...shuffleStable(questions, `${seed}:questions:${blockIndex}`), ...paragraphs];
+  });
+}
+
+function randomizeFieldOptions(field: FormField, enabled: boolean, seed: string): FormField {
+  if (!enabled || !CHOICE_TYPES.includes(field.type) || !field.options?.length) return field;
+  return {
+    ...field,
+    options: shuffleStable(field.options, `${seed}:options:${field.id}`),
+  };
+}
+
 function isDependentFieldDisabled(field: FormField, formData: ResponseData) {
   if (!field.dependent) return false;
 
@@ -49,16 +110,23 @@ function isDependentFieldDisabled(field: FormField, formData: ResponseData) {
   return typeof parentValue !== "string" || !parentValue;
 }
 
-function buildRenderableField(field: FormField, formData: ResponseData): FormField {
-  if (!field.dependent) return field;
+function buildRenderableField(
+  field: FormField,
+  formData: ResponseData,
+  randomizeOptions: boolean,
+  seed: string
+): FormField {
+  const hydratedField: FormField = field.dependent
+    ? {
+        ...field,
+        options: getDependentOptions(field, formData),
+        placeholder: isDependentFieldDisabled(field, formData)
+          ? field.dependent.disabled_placeholder || field.placeholder
+          : field.dependent.placeholder || field.placeholder,
+      }
+    : field;
 
-  return {
-    ...field,
-    options: getDependentOptions(field, formData),
-    placeholder: isDependentFieldDisabled(field, formData)
-      ? field.dependent.disabled_placeholder || field.placeholder
-      : field.dependent.placeholder || field.placeholder,
-  };
+  return randomizeFieldOptions(hydratedField, randomizeOptions, seed);
 }
 
 export function FormRenderer({ form, formSlug, preview, hideBranding }: FormRendererProps) {
@@ -66,7 +134,11 @@ export function FormRenderer({ form, formSlug, preview, hideBranding }: FormRend
   const toast = useToast();
   const router = useRouter();
 
-  const fields = useMemo(() => [...form.schema].sort((a, b) => a.order - b.order), [form.schema]);
+  const [shuffleSeed] = useState(() => Math.random().toString(36).slice(2));
+  const fields = useMemo(() => {
+    const sortedFields = [...form.schema].sort((a, b) => a.order - b.order);
+    return randomizeQuestionOrder(sortedFields, !!form.settings.randomize_questions, shuffleSeed);
+  }, [form.schema, form.settings.randomize_questions, shuffleSeed]);
 
   const [formData, setFormData] = useState<ResponseData>({});
   const [errors, setErrors] = useState<Record<string, { key: string; params?: Record<string, number> }>>({});
@@ -327,7 +399,12 @@ export function FormRenderer({ form, formSlug, preview, hideBranding }: FormRend
               );
             }
 
-            const renderField = buildRenderableField(field, formData);
+            const renderField = buildRenderableField(
+              field,
+              formData,
+              !!form.settings.randomize_options,
+              shuffleSeed
+            );
             const error = getFieldErrorText(field.id);
 
             return (

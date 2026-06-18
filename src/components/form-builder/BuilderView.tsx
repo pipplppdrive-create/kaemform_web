@@ -14,9 +14,9 @@ import {
 } from "@dnd-kit/core";
 import * as LucideIcons from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { Plus, SlidersHorizontal } from "lucide-react";
+import { Palette, Plus, Shuffle, SlidersHorizontal, Trophy } from "lucide-react";
 import { FIELD_TYPES, type FieldType, type Form, type FormSettings } from "@kaemform/shared";
-import { Button, Modal } from "@/components/ui";
+import { Button, Input, Modal, Switch } from "@/components/ui";
 import { useToast } from "@/stores/toastStore";
 import { useFormBuilderStore } from "@/stores/formBuilderStore";
 import { FormRenderer } from "@/components/form-renderer/FormRenderer";
@@ -28,6 +28,127 @@ import { BuilderCanvas } from "./BuilderCanvas";
 import { BuilderPropsPanel, BuilderPropsPanelContent } from "./BuilderPropsPanel";
 
 const ICONS = LucideIcons as unknown as Record<string, LucideIcon>;
+const DEFAULT_PRIMARY_COLOR = "#2563EB";
+const THEME_SWATCHES = ["#2563EB", "#059669", "#7C3AED", "#DC2626", "#EA580C", "#475569"];
+
+function normalizeFormSettings(settings: FormSettings): FormSettings {
+  return {
+    ...settings,
+    section_mode: settings.section_mode ?? "single",
+    theme: {
+      primary_color: settings.theme?.primary_color ?? DEFAULT_PRIMARY_COLOR,
+      font: settings.theme?.font ?? "default",
+    },
+    quiz_enabled: settings.quiz_enabled ?? false,
+    randomize_questions: settings.randomize_questions ?? false,
+    randomize_options: settings.randomize_options ?? false,
+  };
+}
+
+function BuilderFormSettingsModal({
+  open,
+  onOpenChange,
+  settings,
+  onChange,
+  totalPoints,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  settings: FormSettings;
+  onChange: (patch: Partial<FormSettings>) => void;
+  totalPoints: number;
+}) {
+  const t = useTranslations("builder.formSettings");
+
+  const updateColor = (color: string) => {
+    onChange({ theme: { ...settings.theme, primary_color: color } });
+  };
+
+  return (
+    <Modal
+      open={open}
+      onOpenChange={onOpenChange}
+      title={t("title")}
+      description={t("description")}
+      className="max-w-lg"
+      footer={
+        <Button type="button" variant="secondary" onClick={() => onOpenChange(false)}>
+          {t("done")}
+        </Button>
+      }
+    >
+      <div className="flex flex-col gap-5">
+        <div>
+          <div className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-900">
+            <Palette className="h-4 w-4 text-primary-600" />
+            {t("themeTitle")}
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {THEME_SWATCHES.map((color) => {
+              const selected = settings.theme.primary_color.toLowerCase() === color.toLowerCase();
+              return (
+                <button
+                  key={color}
+                  type="button"
+                  onClick={() => updateColor(color)}
+                  className={`h-9 w-9 rounded-full border-2 transition ${
+                    selected ? "border-slate-900 ring-4 ring-slate-100" : "border-white shadow-sm"
+                  }`}
+                  style={{ backgroundColor: color }}
+                  aria-label={color}
+                  title={color}
+                />
+              );
+            })}
+            <Input
+              type="color"
+              value={settings.theme.primary_color}
+              onChange={(event) => updateColor(event.target.value)}
+              className="h-9 w-14 cursor-pointer bg-white p-1"
+              aria-label={t("customColor")}
+            />
+          </div>
+        </div>
+
+        <div className="rounded-input border border-slate-100 bg-slate-50 p-3">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+              <Trophy className="h-4 w-4 text-primary-600" />
+              {t("quizTitle")}
+            </div>
+            {settings.quiz_enabled && (
+              <span className="rounded-full bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 shadow-sm">
+                {t("totalPoints", { points: totalPoints })}
+              </span>
+            )}
+          </div>
+          <div className="flex flex-col gap-3">
+            <Switch
+              label={t("quizEnabled")}
+              checked={settings.quiz_enabled}
+              onCheckedChange={(checked) => onChange({ quiz_enabled: checked })}
+            />
+            <Switch
+              label={t("randomQuestions")}
+              checked={settings.randomize_questions}
+              onCheckedChange={(checked) => onChange({ randomize_questions: checked })}
+            />
+            <Switch
+              label={t("randomOptions")}
+              checked={settings.randomize_options}
+              onCheckedChange={(checked) => onChange({ randomize_options: checked })}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-start gap-2 rounded-input border border-primary-100 bg-primary-50 p-3 text-xs leading-5 text-primary-800">
+          <Shuffle className="mt-0.5 h-4 w-4 shrink-0" />
+          <p>{t("randomHint")}</p>
+        </div>
+      </div>
+    </Modal>
+  );
+}
 
 export function BuilderView({
   form,
@@ -58,10 +179,7 @@ export function BuilderView({
 
   const [status, setStatus] = useState(form.status);
   const [title, setTitle] = useState(form.title);
-  const [formSettings, setFormSettings] = useState<FormSettings>({
-    ...form.settings,
-    section_mode: form.settings.section_mode ?? "single",
-  });
+  const [formSettings, setFormSettings] = useState<FormSettings>(normalizeFormSettings(form.settings));
   const [previewMode, setPreviewMode] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const [closeOpen, setCloseOpen] = useState(false);
@@ -69,6 +187,7 @@ export function BuilderView({
   const [activeDrag, setActiveDrag] = useState<FieldType | null>(null);
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
+  const [formSettingsOpen, setFormSettingsOpen] = useState(false);
   const [paletteSheetOpen, setPaletteSheetOpen] = useState(false);
   const [propsSheetOpen, setPropsSheetOpen] = useState(false);
 
@@ -203,6 +322,7 @@ export function BuilderView({
   const ActiveIcon = activeIconName ? ICONS[activeIconName] ?? LucideIcons.Square : null;
 
   const formUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/${form.slug}`;
+  const totalPoints = fields.reduce((sum, field) => sum + (field.points ?? 0), 0);
 
   return (
     <div className="flex h-[calc(100dvh-59px)] min-h-[620px] flex-col bg-slate-50">
@@ -218,6 +338,7 @@ export function BuilderView({
         onClose={() => setCloseOpen(true)}
         onReopen={() => setReopenOpen(true)}
         onShowQrCode={() => setQrOpen(true)}
+        onOpenFormSettings={() => setFormSettingsOpen(true)}
         formUrl={formUrl}
         isDirty={isDirty}
         isSaving={isSaving}
@@ -237,6 +358,7 @@ export function BuilderView({
               onLockedClick={() => setUpgradeOpen(true)}
               sectionMode={formSettings.section_mode ?? "single"}
               onSectionModeChange={(sectionMode) => updateFormSettings({ section_mode: sectionMode })}
+              quizEnabled={formSettings.quiz_enabled}
             />
           </div>
           <DragOverlay>
@@ -296,8 +418,17 @@ export function BuilderView({
           }}
           sectionMode={formSettings.section_mode ?? "single"}
           onSectionModeChange={(sectionMode) => updateFormSettings({ section_mode: sectionMode })}
+          quizEnabled={formSettings.quiz_enabled}
         />
       </Modal>
+
+      <BuilderFormSettingsModal
+        open={formSettingsOpen}
+        onOpenChange={setFormSettingsOpen}
+        settings={formSettings}
+        onChange={updateFormSettings}
+        totalPoints={totalPoints}
+      />
 
       <Modal
         open={publishOpen}

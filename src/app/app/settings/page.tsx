@@ -1,19 +1,56 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { CreditCard, Languages, UserRound } from "lucide-react";
-import { Badge, Card, CardContent, CardHeader } from "@/components/ui";
+import { CreditCard, ExternalLink, Languages, RefreshCw, Timer, UserRound } from "lucide-react";
+import { Badge, Button, Card, CardContent, CardHeader, Input } from "@/components/ui";
 import { useAuth } from "@/hooks/useAuth";
 import { useLicense } from "@/hooks/useLicense";
+
+const KAEMFORM_PRODUCT_URL = "https://www.kaemnur.com/products/KaemForm";
 
 export default function AccountSettingsPage() {
   const t = useTranslations("appSettings");
   const tCommon = useTranslations("common");
+  const router = useRouter();
   const { user } = useAuth();
   const { license, trialDaysRemaining } = useLicense();
+  const [licenseInput, setLicenseInput] = useState("");
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
   const licenseLabel =
     license.type === "pro" ? tCommon("pro") : license.type === "trial" ? tCommon("trial") : tCommon("free");
+  const hasTrialStarted = Boolean(license.trial_started_at);
+  const trialExpiryDate = license.expires_at ? new Date(license.expires_at).toLocaleDateString("id-ID") : null;
+
+  const handleSyncLicense = async () => {
+    setSyncing(true);
+    setSyncMessage(null);
+
+    try {
+      const res = await fetch("/api/auth/sync-license", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ license: licenseInput.trim() || undefined }),
+      });
+      const json = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setSyncMessage(tCommon("error"));
+        return;
+      }
+
+      setSyncMessage(json.changed ? t("refreshSuccess") : t("refreshNoChange"));
+      router.refresh();
+    } catch {
+      setSyncMessage(tCommon("networkError"));
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   return (
     <div className="mx-auto max-w-3xl space-y-6 px-4 py-6 sm:px-6 sm:py-8">
@@ -66,6 +103,31 @@ export default function AccountSettingsPage() {
               <span className="text-sm text-gray-900">{t("trialDaysRemaining", { days: trialDaysRemaining })}</span>
             </div>
           )}
+          {license.type === "trial" && (
+            <div className="rounded-input border border-amber-200 bg-amber-50 p-3">
+              <div className="flex items-start gap-2">
+                <Timer className="mt-0.5 h-4 w-4 text-amber-600" />
+                <div>
+                  <p className="text-sm font-semibold text-amber-900">
+                    {t("trialCountdownTitle", { days: trialDaysRemaining })}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-amber-800">
+                    {t("trialCountdownDescription", { date: trialExpiryDate ?? "-" })}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          {license.type === "free" && !hasTrialStarted && (
+            <div className="rounded-input border border-primary-100 bg-primary-50 p-3 text-sm leading-6 text-primary-800">
+              {t("trialStartsOnWorkspace")}
+            </div>
+          )}
+          {license.type === "free" && hasTrialStarted && (
+            <div className="rounded-input border border-slate-200 bg-slate-50 p-3 text-sm leading-6 text-slate-600">
+              {t("trialEnded")}
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">{t("storageAddonLabel")}</span>
             <span className="text-sm text-gray-900">
@@ -78,6 +140,29 @@ export default function AccountSettingsPage() {
           <p className="mt-2 rounded-input bg-slate-50 p-3 text-sm leading-6 text-slate-500">
             {t("licenseStandaloneNote")}
           </p>
+
+          <div className="rounded-input border border-border bg-white p-3">
+            <Input
+              label={t("licenseInputLabel")}
+              placeholder={t("licenseInputPlaceholder")}
+              value={licenseInput}
+              onChange={(event) => setLicenseInput(event.target.value)}
+              description={t("licenseInputHint")}
+            />
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <Button type="button" variant="secondary" size="sm" loading={syncing} onClick={handleSyncLicense}>
+                <RefreshCw className="h-4 w-4" />
+                {t("refreshLicense")}
+              </Button>
+              <Link href={KAEMFORM_PRODUCT_URL} target="_blank" rel="noopener noreferrer">
+                <Button type="button" size="sm">
+                  <ExternalLink className="h-4 w-4" />
+                  {t("buyLicense")}
+                </Button>
+              </Link>
+              {syncMessage && <p className="text-xs font-medium text-slate-500">{syncMessage}</p>}
+            </div>
+          </div>
         </CardContent>
       </Card>
 

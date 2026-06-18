@@ -74,6 +74,9 @@ export interface FormField {
   scaleMaxLabel?: string;
   /** paragraph field */
   content?: string;
+  /** quiz scoring */
+  points?: number;
+  answer_key?: string | string[] | number | null;
 }
 
 export type FormSchema = FormField[];
@@ -99,6 +102,9 @@ export interface FormSettings {
   custom_close_message: string | null;
   remove_branding: boolean;
   theme: FormThemeSettings;
+  quiz_enabled: boolean;
+  randomize_questions: boolean;
+  randomize_options: boolean;
 }
 
 export interface Form {
@@ -146,4 +152,7 @@ export const DEFAULT_FORM_SETTINGS: FormSettings = {
   custom_close_message: null,
   remove_branding: false,
   theme: { primary_color: "#2563EB", font: "default" },
+  quiz_enabled: false,
+  randomize_questions: false,
+  randomize_options: false,
 };

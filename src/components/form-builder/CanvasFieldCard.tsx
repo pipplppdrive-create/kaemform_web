@@ -2,7 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { GripVertical, Trash2 } from "lucide-react";
+import { Copy, GripVertical, Trash2 } from "lucide-react";
 import type { FormField } from "@kaemform/shared";
 import { useFormBuilderStore } from "@/stores/formBuilderStore";
 import { FieldPreview, NO_LABEL_TYPES } from "./fields/FieldPreview";
@@ -12,6 +12,7 @@ export function CanvasFieldCard({ field }: { field: FormField }) {
   const fields = useFormBuilderStore((s) => s.fields);
   const selectedFieldId = useFormBuilderStore((s) => s.selectedFieldId);
   const selectField = useFormBuilderStore((s) => s.selectField);
+  const duplicateField = useFormBuilderStore((s) => s.duplicateField);
   const removeField = useFormBuilderStore((s) => s.removeField);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -44,8 +45,9 @@ export function CanvasFieldCard({ field }: { field: FormField }) {
           type="button"
           {...attributes}
           {...listeners}
-          className="cursor-grab rounded-[7px] bg-slate-50 p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+          className="flex h-8 w-8 cursor-grab items-center justify-center rounded-[7px] bg-slate-50 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
           aria-label="Drag"
+          title="Drag"
         >
           <GripVertical className="h-4 w-4" />
         </button>
@@ -53,10 +55,23 @@ export function CanvasFieldCard({ field }: { field: FormField }) {
           type="button"
           onClick={(e) => {
             e.stopPropagation();
+            duplicateField(field.id);
+          }}
+          className="flex h-8 w-8 items-center justify-center rounded-[7px] bg-slate-50 text-slate-400 hover:bg-primary-50 hover:text-primary-700"
+          aria-label="Duplicate"
+          title="Duplicate"
+        >
+          <Copy className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
             removeField(field.id);
           }}
-          className="rounded-[7px] bg-slate-50 p-1.5 text-slate-400 hover:bg-red-50 hover:text-error"
+          className="flex h-8 w-8 items-center justify-center rounded-[7px] bg-slate-50 text-slate-400 hover:bg-red-50 hover:text-error"
           aria-label="Delete"
+          title="Delete"
         >
           <Trash2 className="h-4 w-4" />
         </button>
@@ -67,6 +82,11 @@ export function CanvasFieldCard({ field }: { field: FormField }) {
           <span className="text-sm font-semibold text-slate-900">
             {field.label}
             {field.required && <span className="text-error"> *</span>}
+            {!!field.points && (
+              <span className="ml-2 rounded-full bg-primary-50 px-2 py-0.5 text-[11px] font-bold text-primary-700">
+                {field.points} poin
+              </span>
+            )}
           </span>
           {field.description && <p className="mt-1 text-xs leading-5 text-slate-500">{field.description}</p>}
         </div>

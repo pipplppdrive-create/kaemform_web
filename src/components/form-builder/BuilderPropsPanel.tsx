@@ -10,6 +10,20 @@ import { useFormBuilderStore } from "@/stores/formBuilderStore";
 
 const CHOICE_TYPES: FormField["type"][] = ["single_choice", "multiple_choice", "dropdown"];
 const NON_REFERENCEABLE_TYPES: FormField["type"][] = ["section", "paragraph", "signature"];
+const SCORABLE_TYPES: FormField["type"][] = [
+  "short_text",
+  "long_text",
+  "number",
+  "email",
+  "phone",
+  "date",
+  "time",
+  "datetime",
+  "single_choice",
+  "multiple_choice",
+  "dropdown",
+  "scale",
+];
 const CONDITION_OPERATORS: ConditionOperator[] = ["equals", "not_equals", "contains", "is_empty", "is_not_empty"];
 const DEFAULT_OPTION_LABEL_PATTERN = /^(opsi|option)\s+\d+$/i;
 
@@ -275,16 +289,140 @@ function ConditionsEditor({
   );
 }
 
+function QuizScoringEditor({
+  field,
+  onChange,
+}: {
+  field: FormField;
+  onChange: (patch: Partial<FormField>) => void;
+}) {
+  const t = useTranslations("builder.props.quiz");
+  const options = field.options ?? [];
+  const selectedAnswers = Array.isArray(field.answer_key) ? field.answer_key : [];
+  const scaleMin = field.scaleMin ?? 1;
+  const scaleMax = field.scaleMax ?? 5;
+  const scaleValues = Array.from({ length: Math.max(scaleMax - scaleMin + 1, 0) }, (_, index) => scaleMin + index);
+
+  const updatePoints = (value: string) => {
+    onChange({ points: value === "" ? undefined : Math.max(0, Number(value)) });
+  };
+
+  const toggleMultiAnswer = (value: string) => {
+    onChange({
+      answer_key: selectedAnswers.includes(value)
+        ? selectedAnswers.filter((item) => item !== value)
+        : [...selectedAnswers, value],
+    });
+  };
+
+  return (
+    <div className="rounded-input border border-primary-100 bg-primary-50/40 p-3">
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-semibold text-primary-900">{t("title")}</p>
+          <p className="text-xs leading-5 text-primary-700">{t("hint")}</p>
+        </div>
+        <Input
+          type="number"
+          min={0}
+          value={field.points ?? ""}
+          onChange={(event) => updatePoints(event.target.value)}
+          className="h-9 w-20 bg-white text-center"
+          aria-label={t("points")}
+        />
+      </div>
+
+      {field.type === "multiple_choice" && options.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-semibold text-slate-600">{t("answerKey")}</label>
+          {options.map((option) => (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => toggleMultiAnswer(option.value)}
+              className="flex items-center gap-2 rounded-input bg-white px-2 py-2 text-left text-sm text-slate-700 hover:bg-primary-50"
+            >
+              <span className="flex h-4 w-4 items-center justify-center rounded border border-primary-200">
+                {selectedAnswers.includes(option.value) && <span className="h-2 w-2 rounded-sm bg-primary-600" />}
+              </span>
+              <span className="min-w-0 flex-1 truncate">{option.label}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {(field.type === "single_choice" || field.type === "dropdown") && options.length > 0 && (
+        <div>
+          <label className="text-xs font-semibold text-slate-600">{t("answerKey")}</label>
+          <select
+            value={typeof field.answer_key === "string" ? field.answer_key : ""}
+            onChange={(event) => onChange({ answer_key: event.target.value || null })}
+            className="mt-1 h-9 w-full rounded-input border border-border bg-white px-2 text-sm text-slate-900"
+          >
+            <option value="">{t("noAnswer")}</option>
+            {options.map((option) => (
+              <option key={option.id} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {field.type === "scale" && scaleValues.length > 0 && (
+        <div>
+          <label className="text-xs font-semibold text-slate-600">{t("answerKey")}</label>
+          <select
+            value={typeof field.answer_key === "number" ? String(field.answer_key) : ""}
+            onChange={(event) =>
+              onChange({ answer_key: event.target.value === "" ? null : Number(event.target.value) })
+            }
+            className="mt-1 h-9 w-full rounded-input border border-border bg-white px-2 text-sm text-slate-900"
+          >
+            <option value="">{t("noAnswer")}</option>
+            {scaleValues.map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {(field.type === "short_text" || field.type === "long_text" || field.type === "number") && (
+        <Input
+          type={field.type === "number" ? "number" : "text"}
+          label={t("answerKey")}
+          value={field.answer_key === null || field.answer_key === undefined ? "" : String(field.answer_key)}
+          onChange={(event) =>
+            onChange({
+              answer_key:
+                event.target.value === ""
+                  ? null
+                  : field.type === "number"
+                    ? Number(event.target.value)
+                    : event.target.value,
+            })
+          }
+          className="bg-white"
+        />
+      )}
+    </div>
+  );
+}
+
 export function BuilderPropsPanelContent({
   canUseConditionalLogic,
   onLockedClick,
   sectionMode = "single",
   onSectionModeChange,
+  quizEnabled = false,
 }: {
   canUseConditionalLogic: boolean;
   onLockedClick: () => void;
   sectionMode?: FormSettings["section_mode"];
   onSectionModeChange?: (mode: FormSettings["section_mode"]) => void;
+  quizEnabled?: boolean;
 }) {
   const t = useTranslations();
   const fields = useFormBuilderStore((s) => s.fields);
@@ -364,6 +502,10 @@ export function BuilderPropsPanelContent({
               checked={field.required}
               onCheckedChange={(checked) => updateField(field.id, { required: checked })}
             />
+          )}
+
+          {quizEnabled && SCORABLE_TYPES.includes(field.type) && (
+            <QuizScoringEditor field={field} onChange={(patch) => updateField(field.id, patch)} />
           )}
 
           {(field.type === "short_text" || field.type === "long_text" || field.type === "number" || field.type === "email" || field.type === "phone") && (
@@ -477,19 +619,22 @@ export function BuilderPropsPanel({
   onLockedClick,
   sectionMode,
   onSectionModeChange,
+  quizEnabled,
 }: {
   canUseConditionalLogic: boolean;
   onLockedClick: () => void;
   sectionMode?: FormSettings["section_mode"];
   onSectionModeChange?: (mode: FormSettings["section_mode"]) => void;
+  quizEnabled?: boolean;
 }) {
   return (
-    <aside className="hidden w-[280px] shrink-0 overflow-y-auto border-l border-border bg-white xl:block">
+    <aside className="hidden w-[320px] shrink-0 overflow-y-auto border-l border-border bg-white xl:block">
       <BuilderPropsPanelContent
         canUseConditionalLogic={canUseConditionalLogic}
         onLockedClick={onLockedClick}
         sectionMode={sectionMode}
         onSectionModeChange={onSectionModeChange}
+        quizEnabled={quizEnabled}
       />
     </aside>
   );

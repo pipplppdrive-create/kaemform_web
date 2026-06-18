@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createWorkspaceSchema } from "@kaemform/shared";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/auth/session";
+import { startWorkspaceTrialIfEligible } from "@/lib/auth/trial";
 import { getWorkspacesWithStats } from "@/lib/data/workspaces";
 import { generateWorkspaceSlug } from "@/lib/slug";
 
@@ -56,6 +57,8 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  await startWorkspaceTrialIfEligible(session.id).catch(() => null);
 
   return NextResponse.json({ workspace: created }, { status: 201 });
 }

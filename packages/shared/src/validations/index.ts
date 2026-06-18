@@ -64,6 +64,8 @@ export const formFieldSchema = z.object({
   scaleMinLabel: z.string().optional(),
   scaleMaxLabel: z.string().optional(),
   content: z.string().optional(),
+  points: z.number().min(0).optional(),
+  answer_key: z.union([z.string(), z.array(z.string()), z.number()]).nullable().optional(),
 });
 
 export const formSchemaSchema = z.array(formFieldSchema);
@@ -87,6 +89,9 @@ export const formSettingsSchema = z.object({
       font: z.string(),
     })
     .optional(),
+  quiz_enabled: z.boolean().optional(),
+  randomize_questions: z.boolean().optional(),
+  randomize_options: z.boolean().optional(),
 });
 
 export const createWorkspaceSchema = z.object({

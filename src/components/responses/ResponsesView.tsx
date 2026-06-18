@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, CalendarDays, Download, MessageSquare, TrendingUp } from "lucide-react";
+import { ArrowLeft, CalendarDays, Download, MessageSquare, Timer, TrendingUp } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { Form, FormResponse, ResponseStats } from "@kaemform/shared";
 import { Card, CardContent, CardHeader, Skeleton } from "@/components/ui";
@@ -17,6 +17,8 @@ import { ResponseDetailModal } from "./ResponseDetailModal";
 
 const LIMIT = 20;
 const RETENTION_WARNING_MS = 7 * 24 * 60 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const KAEMFORM_PRODUCT_URL = "https://www.kaemnur.com/products/KaemForm";
 
 const linkButtonClass = cn(
   "inline-flex h-9 items-center gap-1.5 rounded-input border border-primary-200 bg-white px-3 text-[13px] font-semibold text-primary-700 shadow-sm",
@@ -163,6 +165,14 @@ export function ResponsesView({
   const hasExpiringSoon = responses.some(
     (response) => response.expires_at && new Date(response.expires_at).getTime() - Date.now() < RETENTION_WARNING_MS
   );
+  const nextExpiry = responses
+    .map((response) => (response.expires_at ? new Date(response.expires_at).getTime() : null))
+    .filter((value): value is number => value !== null)
+    .sort((a, b) => a - b)[0];
+  const expiryDays = nextExpiry
+    ? Math.max(0, Math.ceil((nextExpiry - Date.now()) / DAY_MS))
+    : form.settings.retention_days;
+  const expiryDate = nextExpiry ? new Date(nextExpiry).toLocaleDateString("id-ID") : "-";
 
   return (
     <div className="flex min-h-[calc(100dvh-59px)] flex-col bg-slate-50">
@@ -205,9 +215,26 @@ export function ResponsesView({
       </div>
 
       <div className="page-container flex flex-col gap-6">
-        <div className="rounded-card border border-primary-100 bg-primary-50 px-4 py-3 text-xs leading-5 text-primary-800">
-          {t("retentionBanner", { days: form.settings.retention_days })}
-          {hasExpiringSoon && <span className="ml-2 font-medium text-amber-600">{t("retentionWarning")}</span>}
+        <div className="rounded-card border border-primary-100 bg-primary-50 px-4 py-3 text-sm leading-6 text-primary-900">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-3">
+              <Timer className="mt-0.5 h-4 w-4 shrink-0 text-primary-600" />
+              <div>
+                <p className="font-semibold">
+                  {t("retentionCountdown", { days: expiryDays, date: expiryDate })}
+                </p>
+                <p className="text-xs leading-5 text-primary-700">
+                  {t("retentionBanner", { days: form.settings.retention_days })}
+                  {hasExpiringSoon && <span className="ml-2 font-medium text-amber-700">{t("retentionWarning")}</span>}
+                  <span className="ml-2">{t("retentionBackupHint")}</span>
+                </p>
+              </div>
+            </div>
+            <a href={KAEMFORM_PRODUCT_URL} target="_blank" rel="noopener noreferrer" className={linkButtonClass}>
+              <Download className="h-4 w-4" />
+              {t("downloadDesktop")}
+            </a>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

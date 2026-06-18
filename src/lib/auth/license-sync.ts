@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { checkLicense, isKaemnurConfigured } from "@/lib/supabase/kaemnur";
 import { TIER_LIMITS, type LicenseCache } from "@kaemform/shared";
+import { mergeIncomingLicenseWithLocalTrial } from "./trial";
 
 /**
  * Sync a user's license_cache from the Kaemnur API. No-op (returns the
@@ -13,18 +14,25 @@ export async function syncLicense(userId: string, kaemnurUid: string): Promise<L
   }
 
   const admin = createAdminClient();
-  const result = await checkLicense({ kaemnur_uid: kaemnurUid });
+  const [{ data: user }, result] = await Promise.all([
+    admin.from("users").select("license_cache").eq("id", userId).maybeSingle(),
+    checkLicense({ kaemnur_uid: kaemnurUid }),
+  ]);
 
   if (!result.found || !result.license) {
     return null;
   }
 
-  const cache: LicenseCache = {
+  const incomingCache: LicenseCache = {
     type: result.license.type,
     expires_at: result.license.expires_at,
     storage_addon: result.license.storage_addon,
     limits: TIER_LIMITS[result.license.type],
   };
+  const cache = mergeIncomingLicenseWithLocalTrial(
+    incomingCache,
+    user?.license_cache as LicenseCache | null | undefined
+  );
 
   await admin
     .from("users")

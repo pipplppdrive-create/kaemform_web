@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { ArrowLeft, Check, Copy, Eye, EyeOff, QrCode } from "lucide-react";
+import { ArrowLeft, Check, Copy, Eye, EyeOff, Palette, QrCode } from "lucide-react";
 import type { FormStatus } from "@kaemform/shared";
 import { Badge, Button } from "@/components/ui";
 
@@ -19,6 +19,7 @@ export interface BuilderTopbarProps {
   onClose: () => void;
   onReopen: () => void;
   onShowQrCode: () => void;
+  onOpenFormSettings: () => void;
   formUrl: string;
   isDirty: boolean;
   isSaving: boolean;
@@ -36,6 +37,7 @@ export function BuilderTopbar({
   onClose,
   onReopen,
   onShowQrCode,
+  onOpenFormSettings,
   formUrl,
   isDirty,
   isSaving,
@@ -97,6 +99,13 @@ export function BuilderTopbar({
         {!previewMode && status === "published" && (
           <Button type="button" variant="secondary" size="sm" aria-label={t("form.menu.qrCode")} onClick={onShowQrCode}>
             <QrCode className="h-4 w-4" />
+          </Button>
+        )}
+
+        {!previewMode && (
+          <Button type="button" variant="secondary" size="sm" onClick={onOpenFormSettings}>
+            <Palette className="h-4 w-4" />
+            {t("builder.formSettings.shortTitle")}
           </Button>
         )}
 

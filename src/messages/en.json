@@ -153,7 +153,9 @@
     "renameWorkspace": "Rename Workspace",
     "deleteWorkspace": "Delete Workspace",
     "deleteWorkspaceConfirm": "The workspace and all its forms will be deleted. This action cannot be undone.",
-    "limitFormsReached": "Form limit reached for this workspace."
+    "limitFormsReached": "Form limit reached for this workspace.",
+    "retentionBackupNotice": "Cloud responses are automatically deleted according to retention, starting at {days} days. Back up in KaemDesktop before data expires.",
+    "downloadDesktop": "Download KaemDesktop"
   },
   "form": {
     "menu": {
@@ -279,7 +281,28 @@
           "is_empty": "is empty",
           "is_not_empty": "is not empty"
         }
+      },
+      "quiz": {
+        "title": "Quiz Score",
+        "hint": "Points",
+        "points": "Points",
+        "answerKey": "Answer key",
+        "noAnswer": "Not selected"
       }
+    },
+    "formSettings": {
+      "shortTitle": "Theme & Quiz",
+      "title": "Theme & Quiz",
+      "description": "Set form color, quiz mode, and randomization.",
+      "themeTitle": "Theme color",
+      "customColor": "Custom color",
+      "quizTitle": "Quiz",
+      "quizEnabled": "Enable quiz scoring",
+      "randomQuestions": "Randomize questions",
+      "randomOptions": "Randomize answers",
+      "randomHint": "Randomization applies when respondents open the form or when preview reloads.",
+      "totalPoints": "{points} total points",
+      "done": "Done"
     },
     "noFieldSelected": "Select a field to edit its properties"
   },
@@ -348,8 +371,14 @@
     "exportedAt": "Exported at",
     "retentionBanner": "Data is stored for {days} days",
     "retentionWarning": "Some responses will be deleted in less than 7 days.",
+    "retentionCountdown": "The soonest response auto-deletes in {days} days ({date}).",
+    "retentionBackupHint": "Back up in KaemDesktop before retention ends.",
+    "downloadDesktop": "Download KaemDesktop",
     "newResponse": "New response received",
     "searchPlaceholder": "Search responses...",
+    "columnsButton": "{count} columns",
+    "columnsTitle": "Visible columns",
+    "columnsShowAll": "Show all",
     "metadataTitle": "Metadata",
     "submittedAt": "Submitted at",
     "ipHash": "IP Hash",
@@ -425,6 +454,14 @@
     "refreshSuccess": "License refreshed successfully",
     "refreshNoChange": "No changes to your license",
     "licenseStandaloneNote": "Your license is synced from Kaemnur. Refresh it after buying or extending a license.",
+    "licenseInputLabel": "License Code / Email",
+    "licenseInputPlaceholder": "Enter purchase code or email",
+    "licenseInputHint": "After buying a license, sync again so the account status updates.",
+    "buyLicense": "Buy License",
+    "trialCountdownTitle": "Pro trial has {days} days left",
+    "trialCountdownDescription": "Trial ends on {date}. The countdown keeps running even if a workspace is deleted.",
+    "trialStartsOnWorkspace": "The 14-day Pro trial starts when you create your first workspace.",
+    "trialEnded": "This account has already used its trial. Buy a license to enable Pro features again.",
     "languageTitle": "Language",
     "languageNote": "Only Indonesian is available for now."
   },
